@@ -148,6 +148,48 @@ class SemanticScholarClient(BaseClient):
             if p.get("paperId")
         ]
 
+    async def search_authors(self, name: str, limit: int = 10) -> list[Paper]:
+        """Search for an author by name and return their papers.
+
+        Uses the first matching result from the /author/search endpoint,
+        then fetches that author's full paper list.
+
+        Args:
+            name: Author name query string.
+            limit: Maximum number of papers to return.
+
+        Returns:
+            List of Paper instances from the best-matching author.
+
+        Raises:
+            SourceError: If no author is found or the API returns an error.
+        """
+        # Step 1: find the author
+        resp = await self._get(
+            f"{self._BASE_URL}/author/search",
+            params={"query": name, "limit": 1, "fields": "authorId,name"},
+        )
+        data = resp.json()
+        authors = data.get("data", [])
+        if not authors or not authors[0].get("authorId"):
+            raise SourceError(
+                f"No author found for '{name}'.",
+                suggestion="Check the spelling or try a surname only.",
+            )
+
+        author_id = authors[0]["authorId"]
+
+        # Step 2: fetch their papers
+        resp2 = await self._get(
+            f"{self._BASE_URL}/author/{author_id}/papers",
+            params={"fields": _PAPER_FIELDS, "limit": min(limit, 1000)},
+        )
+        data2 = resp2.json()
+        papers = [
+            self._parse_paper(p) for p in data2.get("data", []) if p.get("paperId")
+        ]
+        return papers[:limit]
+
     def _parse_paper(self, data: dict) -> Paper:
         """Parse a Semantic Scholar API paper dict into a Paper model.
 

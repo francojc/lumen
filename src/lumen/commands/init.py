@@ -7,7 +7,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
 
-from lumen.config import CONFIG_FILE, Credentials, load_config, write_config
+from lumen.config import CONFIG_FILE, Credentials, write_config
 
 console = Console()
 
@@ -33,8 +33,8 @@ def init(ctx: typer.Context) -> None:
         )
     )
 
-    # Load existing config so re-runs pre-fill current values.
-    config = load_config(path=ctx.obj.config_path if ctx.obj else None)
+    # Use already-resolved config so re-runs pre-fill current values.
+    config = ctx.obj.config
 
     console.print("\n[bold]Semantic Scholar[/bold]")
     console.print("An API key is optional but increases your rate limit.")

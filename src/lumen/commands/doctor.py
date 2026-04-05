@@ -8,7 +8,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from lumen.config import CONFIG_FILE, load_config
+from lumen.config import CONFIG_FILE
 
 console = Console()
 
@@ -57,8 +57,7 @@ def doctor(ctx: typer.Context) -> None:
 
       lumen doctor
     """
-    config_path = ctx.obj.config_path if ctx.obj else None
-    config = load_config(path=config_path)
+    config = ctx.obj.config
 
     table = Table(title="lumen doctor", show_header=True, header_style="bold")
     table.add_column("Check", style="dim", min_width=26)
