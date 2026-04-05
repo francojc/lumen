@@ -74,27 +74,27 @@
 
 ## Timeline and Milestones
 
-### Phase 1: Architecture and Scaffolding (Weeks 1–2)
+### Phase 1: Architecture and Scaffolding (Weeks 1–2) — COMPLETE
 
-- [ ] Initialize repo with `pyproject.toml`, `flake.nix`, `.gitignore`
-- [ ] Set up Typer app skeleton with global flags (`--help`, `--version`, `--verbose`, `--quiet`, `--no-color`)
-- [ ] Implement config resolution layer (file, env vars, defaults)
-- [ ] Stub all command modules with `--help` strings and argument signatures
-- [ ] Write `lumen init` and `lumen doctor` skeletons
+- [x] Initialize repo with `pyproject.toml`, `flake.nix`, `.gitignore`
+- [x] Set up Typer app skeleton with global flags (`--help`, `--version`, `--verbose`, `--quiet`, `--no-color`)
+- [x] Implement config resolution layer (file, env vars, defaults)
+- [x] Stub all command modules with `--help` strings and argument signatures
+- [x] Write `lumen init` and `lumen doctor` skeletons
 
-### Phase 2: Core Data Layer (Weeks 3–4)
+### Phase 2: Core Data Layer (Weeks 3–4) — COMPLETE
 
-- [ ] Define Pydantic models (`Paper`, `Author`, `SearchResult`)
-- [ ] Implement arXiv client (Atom feed parsing via feedparser)
-- [ ] Implement Semantic Scholar client (REST API, pagination)
-- [ ] Implement Google Scholar client (HTML scraping, conservative rate limiting)
-- [ ] Implement deduplication (DOI, arXiv ID, fuzzy title matching)
-- [ ] Implement ranking (relevance, citations, date, combined, impact)
-- [ ] Implement SQLite cache with TTL tiers
+- [x] Define Pydantic models (`Paper`, `Author`, `SearchResult`)
+- [x] Implement arXiv client (Atom feed parsing via feedparser)
+- [x] Implement Semantic Scholar client (REST API, pagination)
+- [—] ~~Google Scholar client~~ — deferred to v1.1
+- [x] Implement deduplication (DOI, arXiv ID, fuzzy title matching)
+- [x] Implement ranking (relevance, citations, date, combined, impact)
+- [x] Implement SQLite cache with TTL tiers
 
-### Phase 3: Command Implementation (Weeks 5–8)
+### Phase 3: Command Implementation (Weeks 5–8) — IN PROGRESS
 
-- [ ] `lumen search` — keyword + field filters, multi-source, dedup, rank
+- [x] `lumen search` — keyword + field filters, multi-source, dedup, rank — complete
 - [ ] `lumen paper` — fetch by ID from arXiv or Semantic Scholar
 - [ ] `lumen cite` — citing papers via Semantic Scholar
 - [ ] `lumen author` — author search across sources
@@ -108,18 +108,18 @@
 
 ### Phase 4: Display and Polish (Weeks 9–10)
 
-- [ ] Rich table renderer (truncated fields, color-coded)
-- [ ] Rich list renderer (labeled blocks per paper)
-- [ ] Detail renderer (full single-paper view, wrapped abstract)
-- [ ] JSON serializer (newline-delimited, pipe-friendly)
+- [x] Rich table renderer (truncated fields, color-coded) — functional in Phase 3
+- [x] Rich list renderer (labeled blocks per paper) — functional in Phase 3
+- [ ] Detail renderer (full single-paper view, wrapped abstract) — stub, Phase 4 polish
+- [x] JSON serializer (newline-delimited, pipe-friendly) — complete in Phase 3
 - [ ] TTY auto-detection for default format switching
 - [ ] Pager integration (`$PAGER`, disable with `LUMEN_NO_PAGER`)
 - [ ] Error message polish: clear description, cause, fix suggestion, exit code
 
 ### Phase 5: Testing and Documentation (Weeks 11–12)
 
-- [ ] Unit tests for core (deduplication, ranking, cache, export)
-- [ ] Integration tests with mocked API responses
+- [x] Unit tests for core (deduplication, ranking, cache, export) — ongoing
+- [x] Integration tests with mocked API responses — started (search command, 25 tests)
 - [ ] Shell completion generation and manual testing
 - [ ] README finalization and `.env.example`
 - [ ] End-to-end smoke tests against live APIs

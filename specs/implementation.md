@@ -50,14 +50,16 @@ lumen/
 │       │   ├── deduplication.py # DOI, arXiv ID, fuzzy title dedup
 │       │   ├── ranking.py       # Relevance, citations, date, impact scoring
 │       │   ├── cache.py         # SQLite-backed TTL cache
-│       │   └── export.py        # BibTeX, RIS, CSL-JSON formatters
+│       │   ├── query.py         # field:value parsing, per-source query builders, cache key
+│       │   └── export.py        # BibTeX, RIS, CSL-JSON formatters (Phase 3)
 │       ├── zotero/
-│       │   └── client.py        # pyzotero wrapper; add, collections, new
+│       │   └── client.py        # pyzotero wrapper; add, collections, new (Phase 3)
 │       └── display/
-│           ├── table.py         # Rich Table renderer
-│           ├── list.py          # Rich Panel/group renderer
-│           ├── detail.py        # Full single-paper Rich layout
-│           └── json_fmt.py      # JSON serializer (newline-delimited)
+│           ├── __init__.py      # render() dispatcher — table/list/detail/json
+│           ├── table.py         # Rich Table renderer (Phase 3 — functional)
+│           ├── list.py          # Rich Panel/group renderer (Phase 3 — functional)
+│           ├── detail.py        # Full single-paper Rich layout (Phase 4 — stub)
+│           └── json_fmt.py      # ndjson serialiser (Phase 3 — complete)
 └── tests/
     ├── conftest.py
     ├── fixtures/                    # Recorded API responses for offline testing
@@ -72,7 +74,8 @@ lumen/
     ├── test_semantic_scholar.py     # SemanticScholarClient (15 tests)
     ├── test_deduplication.py        # deduplicate, _merge, helpers (24 tests)
     ├── test_ranking.py              # rank, scoring functions (22 tests)
-    └── test_cache.py                # Cache get/set/clean/clear/stats (19 tests)
+    ├── test_cache.py                # Cache get/set/clean/clear/stats (19 tests)
+    └── test_search.py               # lumen search CLI integration (25 tests)
 ```
 
 ### Key Modules
@@ -133,10 +136,47 @@ lumen/
    - **Location:** `~/.cache/lumen/cache.db` (XDG); overridable via `db_path` constructor arg
    - **Dependencies:** `sqlite3` (stdlib), `json`, `time`
 
-7. **`display/`**
-   - **Purpose:** Renders `list[Paper]` or `Paper` into Rich output or JSON; auto-detects TTY for format and pager; respects `NO_COLOR`
-   - **Public Interface:** `render(papers, format: Literal["table","list","detail","json"], pager=True)`
-   - **Dependencies:** `rich`
+8. **`core/query.py`** *(Phase 3 — complete)*
+   - **Purpose:** Translates user-facing query strings and CLI flags into per-source API query strings; computes stable cache keys
+   - **Public Interface:** `parse_query(raw) -> (base, filters)`, `build_arxiv_query(...)`, `build_ss_query(...)`, `ss_year_param(from, to)`, `in_year_range(year, from, to)`, `cache_key(source, query, limit, sort, year_from, year_to)`
+   - **Field syntax:** `field:value` or `field:"quoted value"` for `title`, `author`, `venue`, `abstract`; parsed by `_FIELD_RE` regex
+   - **arXiv translation:** `title:` → `ti:`, `author:` → `au:`, `abstract:` → `abs:`, `venue:` → `jr:`; joined with ` AND `
+   - **SS translation:** all fields folded into plain keyword string (SS API has no structured field queries)
+   - **Cache key:** SHA-256 hex digest of `source|query|limit|sort|year_from|year_to`, prefixed `search:{source}:`
+   - **Dependencies:** `hashlib`, `re` (stdlib only)
+
+9. **`display/__init__.py`** *(Phase 3 — complete)*
+   - **Purpose:** Unified `render()` dispatcher; routes to the appropriate renderer based on the format string
+   - **Public Interface:** `render(papers, fmt, *, console, file)` where `fmt` is `"table"`, `"list"`, `"detail"`, or `"json"`
+   - **Note:** `"detail"` falls back to `render_list` until Phase 4
+
+10. **`display/table.py`** *(Phase 3 — functional)*
+    - **Purpose:** Renders a `list[Paper]` as a Rich Table with truncated fields
+    - **Columns:** `#` (3 chars, dim), `Title` (max 52 chars + `…`), `Authors` (first surname + et al. count), `Year`, `Source` (arXiv / Sem. Scholar labels), `Cites`
+    - **Public Interface:** `render_table(papers, console=None) -> None`
+
+11. **`display/list.py`** *(Phase 3 — functional)*
+    - **Purpose:** Renders a `list[Paper]` as one Rich Panel per paper
+    - **Panel content:** meta line (authors · venue · year · source · cites) + abstract snippet (≤ 200 chars) + URL
+    - **Public Interface:** `render_list(papers, console=None) -> None`
+
+12. **`display/json_fmt.py`** *(Phase 3 — complete)*
+    - **Purpose:** Writes papers as newline-delimited JSON (ndjson) for piping to `jq` or `lumen export`
+    - **Serialisation:** `Paper.model_dump_json()` — one JSON object per line, no wrapper array
+    - **Public Interface:** `render_json(papers, file=None) -> None`
+
+13. **`commands/search.py`** *(Phase 3 — complete)*
+    - **Purpose:** Implements `lumen search`; orchestrates the full query pipeline
+    - **Typer command:** `search(ctx, query, sources, limit, title, author, venue, year_from, year_to, sort, fmt, no_cache)`
+    - **Async inner function:** `_search_async(...)` called via `_async.run()`; `_fetch_source(...)` handles per-source cache + client call
+    - **Pipeline:** `parse_query` → `build_*_query` per source → `asyncio.gather(_fetch_source(...))` → year post-filter → `deduplicate` → `rank` → `render`
+    - **Degradation:** per-source `SourceError` is caught and logged; re-raises only if *all* sources fail
+    - **Exit codes:** 0 success, 1 source error, 2 usage/validation error, 4 no results
+    - **Dependencies:** all clients, `core/query.py`, `core/cache.py`, `core/deduplication.py`, `core/ranking.py`, `display/`
+
+*(Legacy placeholder, kept for completeness:)*
+
+7. **`display/`** — see entries 9–12 above for the implemented modules
 
 ### Data Model
 

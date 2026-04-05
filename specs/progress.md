@@ -1,7 +1,7 @@
 # Development Project Progress
 
 **Project:** lumen
-**Status:** Phase 1 complete
+**Status:** Phase 3 in progress
 **Last Updated:** 2026-04-05
 
 ## Current Status Overview
@@ -121,6 +121,13 @@ _None identified yet._
 - [x] `core/cache.py` — SQLite TTL cache, 3 tiers, schema versioning, get/set/clean/clear/stats
 - [x] `tests/fixtures/` — recorded arXiv XML and Semantic Scholar JSON responses for offline testing
 - [x] 110 tests total (15 models, 15 arXiv, 15 SS, 24 dedup, 22 ranking, 19 cache), ruff clean
+- [x] `core/query.py` — `parse_query`, `build_arxiv_query`, `build_ss_query`, `ss_year_param`, `in_year_range`, `cache_key`
+- [x] `display/json_fmt.py` — ndjson serialiser via `Paper.model_dump_json()`
+- [x] `display/table.py` — Rich Table with #, Title, Authors, Year, Source, Cites columns
+- [x] `display/list.py` — Rich Panel per paper (meta line + abstract snippet + URL)
+- [x] `display/__init__.py` — unified `render()` dispatcher (table/list/detail/json)
+- [x] `commands/search.py` — full async pipeline; 25 integration tests
+- [x] 135 tests total, ruff clean
 
 ### In Progress
 
@@ -153,7 +160,9 @@ _Nothing deferred yet._
 
 - `test_cache.py` imports `_TTL` and `CacheStats` that are unused (ruff auto-fixed); no functional debt
 - SS `get_recommendations` fixture returned 0 results (API behaviour without key); test only asserts type, not content
-- No test coverage measurement yet — `pytest-cov` not yet run against Phase 2 modules
+- No test coverage measurement yet — `pytest-cov` not yet run against Phase 2 or Phase 3 modules
+- `display/detail.py` still a stub — falls back to `render_list` for now; proper full-paper view deferred to Phase 4
+- TTY auto-detection for default `--format` not yet implemented — always uses config default (`table`)
 
 ## Dependency Status
 
