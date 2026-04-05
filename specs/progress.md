@@ -2,7 +2,7 @@
 
 **Project:** lumen
 **Status:** Phase 1 complete
-**Last Updated:** 2026-04-05
+**Last Updated:** 2026-04-06
 
 ## Current Status Overview
 
@@ -23,12 +23,19 @@
   command stubs with full `--help` strings and argument signatures, `lumen init` (interactive
   Rich prompts, writes config), `lumen doctor` (async connectivity checks), full package
   skeleton (`clients/`, `core/`, `display/`, `zotero/`), test scaffold — 2026-04-05
+- Phase 2 session 1: `core/models.py` tested (15 tests); `clients/arxiv.py` implemented
+  (`_parse_entry`, `search`, `get_by_id`); arXiv Atom fixtures saved to `tests/fixtures/`;
+  15 arXiv client tests covering search, get_by_id, parse, retry, circuit-break;
+  30 tests total, ruff clean — 2026-04-06
 
 ### Active Work
 
-- [ ] Pydantic models (`Paper`, `Author`, `SearchResult`) — already written; ready to test
-- [ ] arXiv client (Atom feed via feedparser)
+- [x] Pydantic models (`Paper`, `Author`, `SearchResult`) — tested (15 tests)
+- [x] arXiv client (Atom feed via feedparser) — implemented and tested (15 tests)
 - [ ] Semantic Scholar client (REST API, pagination)
+- [ ] Deduplication (DOI, arXiv ID, fuzzy title matching)
+- [ ] Ranking (relevance, citations, date, impact)
+- [ ] SQLite cache with TTL tiers
 
 ## Milestone Tracking
 
@@ -58,7 +65,7 @@ _None identified yet._
 
 ### Test Results
 
-- **Unit Tests:** N/A (stub-only — Phase 2 will add first tests)
+- **Unit Tests:** 30 passing (15 models, 15 arXiv client)
 - **Integration Tests:** N/A
 - **Test Coverage:** N/A
 
@@ -91,7 +98,7 @@ _None identified yet._
 
 ### In Progress
 
-- [ ] Phase 2: Core data layer
+- [ ] Phase 2: Core data layer (arXiv ✓ — Semantic Scholar, dedup, ranking, cache remain)
 
 ### Planned
 
