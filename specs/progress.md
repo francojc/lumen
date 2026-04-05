@@ -131,22 +131,19 @@ _None identified yet._
 
 ### In Progress
 
-- `lumen paper` — Phase 3 (next)
-- `lumen cite` — Phase 3
-
 ### Planned
 
 - [x] `lumen search` — Phase 3 ✓
-- [ ] `lumen paper` — Phase 3
-- [ ] `lumen cite` — Phase 3
-- [ ] `lumen author` — Phase 3
-- [ ] `lumen recommend` — Phase 3
-- [ ] `lumen export` — Phase 3
-- [ ] `lumen query` — Phase 3
-- [ ] `lumen zotero add/collections/new` — Phase 3
-- [ ] `lumen cache stats/clean/clear` — Phase 3
-- [ ] `lumen init` — Phase 3
-- [ ] `lumen doctor` — Phase 3
+- [x] `lumen paper` — Phase 3 ✓
+- [x] `lumen cite` — Phase 3 ✓
+- [x] `lumen author` — Phase 3 ✓
+- [x] `lumen recommend` — Phase 3 ✓
+- [x] `lumen export` — Phase 3 ✓
+- [x] `lumen query` — Phase 3 ✓
+- [x] `lumen zotero add/collections/new` — Phase 3 ✓
+- [x] `lumen cache stats/clean/clear` — Phase 3 ✓
+- [x] `lumen init` — Phase 3 ✓
+- [x] `lumen doctor` — Phase 3 ✓
 - [ ] Rich display layer (table, list, detail, JSON) — Phase 4
 - [ ] Shell completions (Zsh, Bash, Fish) — Phase 4
 

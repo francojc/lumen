@@ -165,45 +165,47 @@ def paper(
         raise typer.Exit(code=1) from exc
 
 
-async def _paper_async(*, paper_id: str, fmt: str, no_cache: bool, cfg) -> None:
-    """Fetch a single paper by ID and render it.
+async def fetch_paper(paper_id: str, *, cfg, no_cache: bool = False) -> Paper:
+    """Fetch a single Paper by ID without rendering it.
+
+    Shared helper used by ``lumen paper``, ``lumen zotero add``, etc.
+    Caches the result under the ``'paper'`` tier.
 
     Strategy:
-      - arXiv ID  → ArxivClient.get_by_id (authoritative for arXiv metadata)
-      - DOI       → SemanticScholarClient.get_by_id("DOI:…")
-      - SS ID     → SemanticScholarClient.get_by_id(bare_id)
-      - unknown   → SemanticScholarClient.get_by_id (SS accepts many formats)
+      - arXiv ID  → ArxivClient.get_by_id
+      - DOI/SS/unknown → SemanticScholarClient.get_by_id with prefix
     """
     id_type = _detect_id_type(paper_id)
     cache_key = f"paper:{paper_id}"
     cache = Cache(cfg.cache_dir / "cache.db")
 
-    # Cache read
     if not no_cache:
         cached = cache.get(cache_key, "paper")
         if cached is not None:
             try:
-                p = Paper.model_validate(cached)
-                console = Console(no_color=cfg.no_color)
-                render([p], fmt=fmt, console=console)
-                return
+                return Paper.model_validate(cached)
             except Exception:
                 logger.debug("Cache entry corrupt for %s; refetching.", cache_key)
 
-    # Live fetch
     api_key = cfg.credentials.semantic_scholar_api_key
-
     if id_type == "arxiv":
-        client = ArxivClient()
-        result: Paper = await client.get_by_id(paper_id)
+        result: Paper = await ArxivClient().get_by_id(paper_id)
     else:
         ss_id = _normalize_for_ss(paper_id, id_type)
-        client_ss = SemanticScholarClient(api_key=api_key)
-        result = await client_ss.get_by_id(ss_id)
+        result = await SemanticScholarClient(api_key=api_key).get_by_id(ss_id)
 
-    # Cache write
     if not no_cache:
         cache.set(cache_key, json.loads(result.model_dump_json()), "paper")
+
+    return result
+
+
+async def _paper_async(*, paper_id: str, fmt: str, no_cache: bool, cfg) -> None:
+    """Fetch a single paper by ID and render it."""
+    try:
+        result = await fetch_paper(paper_id, cfg=cfg, no_cache=no_cache)
+    except SourceError:
+        raise
 
     console = Console(no_color=cfg.no_color)
     render([result], fmt=fmt, console=console)

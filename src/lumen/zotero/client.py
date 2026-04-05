@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 
 from lumen.core.models import Paper
-from lumen.exceptions import ConfigError
+from lumen.exceptions import ConfigError, LumenError
 
 logger = logging.getLogger(__name__)
 
@@ -36,13 +36,17 @@ class ZoteroClient:
         except ImportError as exc:
             raise ImportError("pyzotero is required for Zotero integration.") from exc
 
+    # ------------------------------------------------------------------
+    # Public interface
+    # ------------------------------------------------------------------
+
     def add_paper(
         self,
         paper: Paper,
         collection_key: str | None = None,
         tags: list[str] | None = None,
     ) -> dict:
-        """Add a paper to the Zotero library.
+        """Add a paper to the Zotero library as a journalArticle item.
 
         Args:
             paper: Paper to add.
@@ -50,32 +54,70 @@ class ZoteroClient:
             tags: Tags to apply to the created item.
 
         Returns:
-            Zotero API response dict with the created item key.
+            Zotero API response dict; the new item key is under
+            ``response["success"]["0"]``.
+
+        Raises:
+            LumenError: If the Zotero API returns a failure.
         """
-        # TODO: implement in Phase 3
-        raise NotImplementedError
+        item = {
+            "itemType": "journalArticle",
+            "title": paper.title,
+            "abstractNote": paper.abstract or "",
+            "publicationTitle": paper.venue or "",
+            "date": str(paper.year) if paper.year else "",
+            "DOI": paper.doi or "",
+            "url": paper.url,
+            "creators": [
+                {"creatorType": "author", "name": a.name} for a in paper.authors
+            ],
+            "collections": [collection_key] if collection_key else [],
+            "tags": [{"tag": t} for t in (tags or [])],
+        }
+        resp = self._zot.create_items([item])
+        if resp.get("failed"):
+            first_error = next(iter(resp["failed"].values()), {})
+            raise LumenError(
+                f"Zotero API rejected the item: {first_error.get('message', 'unknown error')}",
+                suggestion="Check your Zotero credentials and try again.",
+            )
+        return resp
 
     def list_collections(self) -> list[dict]:
-        """Return all top-level and nested collections.
+        """Return all collections in the library (top-level and nested).
 
         Returns:
-            List of Zotero collection dicts with 'key' and 'data.name'.
+            List of Zotero collection objects, each with ``key`` and
+            ``data`` sub-dict containing at least ``name`` and
+            ``parentCollection``.
         """
-        # TODO: implement in Phase 3
-        raise NotImplementedError
+        return self._zot.collections()
 
     def create_collection(self, name: str, parent_key: str | None = None) -> dict:
         """Create a new Zotero collection.
 
         Args:
             name: Collection name.
-            parent_key: Parent collection key for nested collections.
+            parent_key: Parent collection key for a nested collection.
 
         Returns:
-            Zotero API response dict with the new collection key.
+            Zotero API response dict; the new collection key is under
+            ``response["success"]["0"]``.
+
+        Raises:
+            LumenError: If the Zotero API returns a failure.
         """
-        # TODO: implement in Phase 3
-        raise NotImplementedError
+        payload: dict = {"name": name}
+        if parent_key:
+            payload["parentCollection"] = parent_key
+        resp = self._zot.create_collections([payload])
+        if resp.get("failed"):
+            first_error = next(iter(resp["failed"].values()), {})
+            raise LumenError(
+                f"Zotero API rejected the collection: {first_error.get('message', 'unknown error')}",
+                suggestion="Check your Zotero credentials and try again.",
+            )
+        return resp
 
     def find_collection_key(self, name: str) -> str | None:
         """Look up a collection key by name (case-insensitive).
@@ -84,7 +126,9 @@ class ZoteroClient:
             name: Human-readable collection name.
 
         Returns:
-            Zotero collection key string, or None if not found.
+            Zotero collection key string, or ``None`` if not found.
         """
-        # TODO: implement in Phase 3
-        raise NotImplementedError
+        for coll in self.list_collections():
+            if coll.get("data", {}).get("name", "").lower() == name.lower():
+                return coll.get("key")
+        return None
