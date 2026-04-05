@@ -19,3 +19,4 @@ credentials.json
 htmlcov/
 .coverage
 coverage.xml
+.direnv/
