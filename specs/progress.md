@@ -244,18 +244,16 @@ _None yet._
 
 ### Immediate Actions (Next 2 Weeks)
 
-- [ ] Implement `display/detail.py` — full single-paper Rich layout (Phase 4)
-- [ ] Add TTY auto-detection for `--format` default switching
-- [ ] Implement pager integration (`$PAGER`, `LUMEN_NO_PAGER`)
-- [ ] Polish error messages across all commands (clear description, cause, fix suggestion)
-- [ ] Measure test coverage with `pytest-cov`; bring `core/` to ≥ 90%
+- [ ] Generate shell completions for Zsh, Bash, Fish via Typer and test manually
+- [ ] Finalize README with usage examples for all 11 commands
+- [ ] Write end-to-end smoke tests hitting live APIs (run manually pre-release)
+- [ ] Set up GitHub Actions CI (lint, typecheck, test, build stages)
 
 ### Medium-term Goals (Next Month)
 
-- [ ] Shell completions for Zsh, Bash, Fish (generated via Typer, manually tested)
-- [ ] README finalization with usage examples for all 11 commands
-- [ ] End-to-end smoke tests against live APIs
-- [ ] GitHub Actions CI pipeline (lint, typecheck, test, build)
+- [ ] Prepare `v0.1.0` release: update `pyproject.toml` version, `CHANGELOG.md`
+- [ ] `uv build` and test install from wheel
+- [ ] Publish to PyPI or document `uv tool install` from git
 
 ### Decisions Needed
 

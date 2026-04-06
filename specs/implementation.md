@@ -1,7 +1,7 @@
 # Development Implementation Details
 
 **Project:** lumen
-**Status:** Phase 3 complete — Phase 4 starting
+**Status:** Phase 4 complete — Phase 5 starting
 **Last Updated:** 2026-04-06
 
 ## Architecture
@@ -84,7 +84,8 @@ lumen/
     ├── test_init.py                 # lumen init CLI integration (8 tests)
     ├── test_doctor.py               # lumen doctor CLI integration (13 tests)
     ├── test_query.py                # lumen query unit + CLI integration (16 tests)
-    └── test_zotero.py               # lumen zotero CLI integration (18 tests)
+    ├── test_zotero.py               # lumen zotero CLI integration (18 tests)
+    └── test_display_phase4.py       # detail renderer + effective_format + render() dispatch (33 tests)
 ```
 
 ### Key Modules
@@ -244,6 +245,18 @@ lumen/
     - **`find_collection_key(name)`:** case-insensitive name lookup across all collections; returns key or `None`
     - **Auth:** `library_id`, `library_type`, `api_key` read from `Config.credentials`; `ConfigError` raised if absent
     - **Dependencies:** `pyzotero`, `core/models.py`
+
+22. **`display/detail.py`** *(Phase 4 — complete)*
+    - **Purpose:** Full single-paper Rich layout; handles lists of papers with Rule separators between entries
+    - **Sections per paper:** title + source badge (`Columns`), authors block (with affiliations), abstract `Panel`, key/value metadata `Table.grid` (year, venue, categories, citations, DOI, arXiv ID), links line (URL + PDF)
+    - **Public Interface:** `render_detail(papers: list[Paper], console: Console | None = None) -> None`
+    - **Source badges:** `"arxiv"` → `[arXiv]` (bold red), `"semantic_scholar"` → `[Semantic Scholar]` (bold cyan)
+    - **Empty guard:** prints `[dim]No results.[/dim]` when list is empty
+
+23. **`display/__init__.py`** *(Phase 4 additions)*
+    - **`effective_format(explicit, default) -> str`:** returns `explicit` if set; `"json"` when `sys.stdout.isatty()` is False; `default` otherwise. All render-calling commands use this instead of `fmt or cfg.format`.
+    - **`render(..., pager=False)`:** new `pager` parameter; when `True` and stdout is a TTY, wraps `_render_rich()` in `console.pager(styles=True)` so output is paged through `$PAGER` (default: `less -R`). JSON format bypasses pager (writes directly to stdout).
+    - **`_render_rich(papers, fmt, con)`:** internal dispatcher extracted to support pager wrapping cleanly.
 
 21. **`commands/zotero.py`** *(Phase 3 — complete)*
     - **Purpose:** Implements `lumen zotero add/collections/new` subcommands

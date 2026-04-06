@@ -106,15 +106,15 @@
 - [x] `lumen init` — full interactive credential setup (fixed + tested)
 - [x] `lumen doctor` — connectivity and config health checks (fixed + tested)
 
-### Phase 4: Display and Polish (Weeks 9–10) — IN PROGRESS
+### Phase 4: Display and Polish (Weeks 9–10) — COMPLETE
 
 - [x] Rich table renderer (truncated fields, color-coded) — complete in Phase 3
 - [x] Rich list renderer (labeled blocks per paper) — complete in Phase 3
 - [x] JSON serializer (newline-delimited, pipe-friendly) — complete in Phase 3
-- [ ] Detail renderer (full single-paper view, wrapped abstract) — stub, needs Phase 4 implementation
-- [ ] TTY auto-detection for default format switching
-- [ ] Pager integration (`$PAGER`, disable with `LUMEN_NO_PAGER`)
-- [ ] Error message polish: clear description, cause, fix suggestion, exit code
+- [x] Detail renderer (full single-paper view, wrapped abstract) — complete in Phase 4
+- [x] TTY auto-detection for default format switching (`effective_format()`) — complete in Phase 4
+- [x] Pager integration (`$PAGER` via `console.pager(styles=True)`, `LUMEN_NO_PAGER`) — complete in Phase 4
+- [x] Error message polish: dim suggestions, `LumenError` catch-alls, consistent "Unknown format" — complete in Phase 4
 
 ### Phase 5: Testing and Documentation (Weeks 11–12)
 
