@@ -19,7 +19,54 @@ from lumen.exceptions import SourceError
 
 logger = logging.getLogger(__name__)
 
-_RETRY_STATUSES = {429, 503}
+
+def _http_error_message(source: str, status: int) -> tuple[str, str]:
+    """Return a ``(message, suggestion)`` pair for a non-retryable HTTP error.
+
+    Args:
+        source: Human-readable source/client name.
+        status: HTTP status code.
+
+    Returns:
+        Tuple of (message, suggestion) for :class:`SourceError`.
+    """
+    if status == 401:
+        return (
+            f"{source}: authentication required (HTTP 401).",
+            "Run `lumen init` to configure API credentials.",
+        )
+    if status == 403:
+        return (
+            f"{source}: access denied (HTTP 403 Forbidden).",
+            (
+                "This source may require an API key or your IP is being rate-limited. "
+                "Run `lumen init` to add a Semantic Scholar API key."
+            ),
+        )
+    if status == 404:
+        return (
+            f"{source}: resource not found (HTTP 404).",
+            "The requested paper or endpoint may not exist on this source.",
+        )
+    if status == 429:
+        return (
+            f"{source}: rate-limited (HTTP 429 Too Many Requests).",
+            "Wait a moment then retry, or add an API key via `lumen init`.",
+        )
+    if 500 <= status < 600:
+        return (
+            f"{source}: server error (HTTP {status}).",
+            "The source API is temporarily unavailable. Try again in a few minutes.",
+        )
+    return (
+        f"{source}: unexpected HTTP {status}.",
+        "Run `lumen doctor` to check source connectivity.",
+    )
+
+
+# 429/503: rate-limited or overloaded — always retry with backoff.
+# 500/502/504: transient server errors — worth retrying.
+_RETRY_STATUSES = {429, 500, 502, 503, 504}
 _MAX_RETRIES = 3
 _BACKOFF_BASE = 1.0  # seconds
 
@@ -93,35 +140,57 @@ class BaseClient(ABC):
         if headers:
             _headers.update(headers)
 
+        cls_name = self.__class__.__name__
+
         async with self._semaphore, httpx.AsyncClient(timeout=15.0) as client:
             for attempt in range(_MAX_RETRIES):
                 try:
                     resp = await client.get(url, params=params, headers=_headers)
+
                     if resp.status_code in _RETRY_STATUSES:
-                        wait = _BACKOFF_BASE * (2**attempt)
-                        logger.debug(
-                            "Rate-limited (%s). Retrying in %.1fs.",
-                            resp.status_code,
-                            wait,
+                        if attempt < _MAX_RETRIES - 1:
+                            wait = _BACKOFF_BASE * (2**attempt)
+                            logger.debug(
+                                "%s: HTTP %s — retrying in %.1fs (attempt %d/%d).",
+                                cls_name,
+                                resp.status_code,
+                                wait,
+                                attempt + 1,
+                                _MAX_RETRIES,
+                            )
+                            await asyncio.sleep(wait)
+                            continue
+                        # Exhausted retries on a retryable status.
+                        raise SourceError(
+                            f"{cls_name} is unavailable (HTTP {resp.status_code}).",
+                            suggestion=(
+                                "The source API may be temporarily down. "
+                                "Try again in a few minutes."
+                            ),
                         )
-                        await asyncio.sleep(wait)
-                        continue
-                    resp.raise_for_status()
+
+                    # Non-retryable HTTP errors: convert to SourceError immediately.
+                    if not resp.is_success:
+                        raise SourceError(
+                            *_http_error_message(cls_name, resp.status_code),
+                        )
+
                     return resp
+
+                except SourceError:
+                    raise  # already formatted — propagate as-is
                 except httpx.RequestError as exc:
                     if attempt == _MAX_RETRIES - 1:
                         self._circuit_open = True
                         raise SourceError(
-                            f"Network error contacting {self.__class__.__name__}: {exc}",
+                            f"{cls_name}: network error — {type(exc).__name__}.",
                             suggestion="Check your internet connection and try again.",
                         ) from exc
                     wait = _BACKOFF_BASE * (2**attempt)
                     await asyncio.sleep(wait)
 
         # Should not reach here, but satisfy type checker.
-        raise SourceError(
-            f"{self.__class__.__name__}: exhausted retries."
-        )  # pragma: no cover
+        raise SourceError(f"{cls_name}: exhausted retries.")  # pragma: no cover
 
     def _default_headers(self) -> dict[str, str]:
         """Return default HTTP headers. Override in subclasses as needed."""
