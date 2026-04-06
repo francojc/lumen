@@ -14,7 +14,7 @@ from rich.console import Console
 from lumen._async import run
 from lumen.core.export import ExportFormat
 from lumen.core.export import export as fmt_export
-from lumen.core.models import Paper
+from lumen.core.models import Paper, SearchResult
 from lumen.exceptions import LumenError, NoResultsError, SourceError
 
 logger = logging.getLogger(__name__)
@@ -139,10 +139,10 @@ async def _export_query_async(
     papers: list[Paper] = []
     errors: list[Exception] = []
     for r in results:
-        if isinstance(r, Exception):
-            errors.append(r)
-        else:
+        if isinstance(r, SearchResult):
             papers.extend(r.papers)
+        elif isinstance(r, Exception):
+            errors.append(r)
 
     if not papers and errors:
         raise SourceError(

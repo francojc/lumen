@@ -335,7 +335,7 @@ async def _search_async(
                     suggestion="Run `lumen doctor` to check source connectivity.",
                 )
             )
-        else:
+        elif isinstance(result, list):
             all_papers.extend(result)
 
     if not all_papers and errors:
@@ -350,7 +350,7 @@ async def _search_async(
 
     # Deduplicate, rank, slice.
     unique = deduplicate(all_papers)
-    ranked = rank(unique, criterion=sort, query=base_keywords or raw_query)
+    ranked = rank(unique, criterion=sort, query=base_keywords or raw_query)  # type: ignore[arg-type]
     final = ranked[:limit]
 
     if not final:

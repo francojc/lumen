@@ -16,7 +16,7 @@ from lumen.clients.semantic_scholar import SemanticScholarClient
 from lumen.config import VALID_FORMATS
 from lumen.core.cache import Cache
 from lumen.core.models import Paper
-from lumen.display import effective_format, render
+from lumen.display import Format, effective_format, render
 from lumen.exceptions import LumenError, NoResultsError, SourceError
 
 logger = logging.getLogger(__name__)
@@ -202,7 +202,7 @@ async def fetch_paper(paper_id: str, *, cfg, no_cache: bool = False) -> Paper:
     return result
 
 
-async def _paper_async(*, paper_id: str, fmt: str, no_cache: bool, cfg) -> None:
+async def _paper_async(*, paper_id: str, fmt: Format, no_cache: bool, cfg) -> None:
     """Fetch a single paper by ID and render it."""
     import sys
 
@@ -296,7 +296,7 @@ def cite(
 
 
 async def _cite_async(
-    *, paper_id: str, limit: int, fmt: str, no_cache: bool, cfg
+    *, paper_id: str, limit: int, fmt: Format, no_cache: bool, cfg
 ) -> None:
     """Fetch citing papers via Semantic Scholar and render them."""
     id_type = _detect_id_type(paper_id)

@@ -22,7 +22,6 @@ from lumen.core.models import Author, Paper
 from lumen.display import effective_format, render
 from lumen.display.detail import render_detail
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

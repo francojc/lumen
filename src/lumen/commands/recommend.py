@@ -15,7 +15,7 @@ from lumen.commands.paper import _detect_id_type, _normalize_for_ss
 from lumen.config import VALID_FORMATS
 from lumen.core.cache import Cache
 from lumen.core.models import Paper
-from lumen.display import effective_format, render
+from lumen.display import Format, effective_format, render
 from lumen.exceptions import LumenError, NoResultsError, SourceError
 
 logger = logging.getLogger(__name__)
@@ -114,7 +114,7 @@ def recommend(
 
 
 async def _recommend_async(
-    *, seed: str, limit: int, fmt: str, no_cache: bool, cfg
+    *, seed: str, limit: int, fmt: Format, no_cache: bool, cfg
 ) -> None:
     """Fetch recommendations via Semantic Scholar and render them."""
     id_type = _detect_id_type(seed)

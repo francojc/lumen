@@ -14,7 +14,7 @@ from lumen.clients.semantic_scholar import SemanticScholarClient
 from lumen.config import VALID_FORMATS
 from lumen.core.cache import Cache
 from lumen.core.models import Paper
-from lumen.display import effective_format, render
+from lumen.display import Format, effective_format, render
 from lumen.exceptions import LumenError, NoResultsError, SourceError
 
 logger = logging.getLogger(__name__)
@@ -96,7 +96,7 @@ def author(
 
 
 async def _author_async(
-    *, name: str, limit: int, fmt: str, no_cache: bool, cfg
+    *, name: str, limit: int, fmt: Format, no_cache: bool, cfg
 ) -> None:
     """Fetch an author's papers via Semantic Scholar and render them."""
     cache_key = f"author:{name.lower()}:{limit}"

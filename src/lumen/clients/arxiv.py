@@ -15,7 +15,9 @@ from lumen.core.models import Author, Paper, SearchResult
 from lumen.exceptions import SourceError
 
 #: arXiv ID pattern — strips URL prefix, 'arxiv:' prefix, and version suffix.
-_ARXIV_ID_RE = re.compile(r"(?:https?://arxiv\.org/abs/|abs/|arxiv:)?([^\s/]+?)(?:v\d+)?$", re.IGNORECASE)
+_ARXIV_ID_RE = re.compile(
+    r"(?:https?://arxiv\.org/abs/|abs/|arxiv:)?([^\s/]+?)(?:v\d+)?$", re.IGNORECASE
+)
 
 
 def _parse_arxiv_id(raw: str) -> str:
@@ -62,7 +64,7 @@ class ArxivClient(BaseClient):
                 suggestion="Check your query syntax or try again later.",
             )
 
-        total = int(feed.feed.get("opensearch_totalresults", 0))
+        total = int(feed.feed.get("opensearch_totalresults", 0))  # type: ignore[union-attr]
         papers = [self._parse_entry(e) for e in feed.entries]
 
         return SearchResult(

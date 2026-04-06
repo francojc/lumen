@@ -9,14 +9,13 @@ Strategy
 
 from __future__ import annotations
 
-import pytest
 import httpx
+import pytest
 import respx
 
 from lumen.clients.arxiv import ArxivClient
 from lumen.clients.base import _http_error_message
 from lumen.exceptions import SourceError
-
 
 # ---------------------------------------------------------------------------
 # _http_error_message — unit tests
@@ -102,9 +101,7 @@ class TestBaseClientGet:
 
     async def test_200_returns_response(self) -> None:
         with respx.mock:
-            respx.get(_ARXIV_URL).mock(
-                return_value=httpx.Response(200, text="<feed/>")
-            )
+            respx.get(_ARXIV_URL).mock(return_value=httpx.Response(200, text="<feed/>"))
             client = ArxivClient()
             resp = await client._get(_ARXIV_URL)
         assert resp.status_code == 200

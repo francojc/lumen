@@ -31,7 +31,7 @@ from lumen.core.models import Paper
 
 from .detail import render_detail
 from .json_fmt import render_json
-from .list import render_list
+from .panels import render_list
 from .table import render_table
 
 __all__ = [

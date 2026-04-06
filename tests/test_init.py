@@ -248,7 +248,9 @@ class TestInitEnvVarCredentials:
             patch("lumen.config.load_config", return_value=_test_config()),
             patch("lumen.commands.init.write_config", side_effect=capture),
             # User leaves SS prompt blank, fills Zotero, accepts defaults
-            patch("rich.prompt.Prompt.ask", side_effect=["", "uid", "zot", "10", "table"]),
+            patch(
+                "rich.prompt.Prompt.ask", side_effect=["", "uid", "zot", "10", "table"]
+            ),
             patch("rich.prompt.Confirm.ask", return_value=True),
             patch("lumen.config._load_toml", return_value=existing_toml),
         ):
@@ -319,8 +321,12 @@ class TestInitEnvVarCredentials:
 
         # Remove the three credential env vars so init uses config file defaults.
         import os
-        safe_env = {k: v for k, v in os.environ.items()
-                    if k not in ("SEMANTIC_SCHOLAR_API_KEY", "ZOTERO_USER_ID", "ZOTERO_API_KEY")}
+
+        safe_env = {
+            k: v
+            for k, v in os.environ.items()
+            if k not in ("SEMANTIC_SCHOLAR_API_KEY", "ZOTERO_USER_ID", "ZOTERO_API_KEY")
+        }
         with (
             patch.dict(os.environ, safe_env, clear=True),
             patch("lumen.config.load_config", return_value=existing),

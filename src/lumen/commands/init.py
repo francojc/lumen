@@ -15,8 +15,8 @@ from lumen.config import CONFIG_FILE, Credentials, write_config
 # Mapping: human label → (env var name, is_password)
 _CREDENTIALS: list[tuple[str, str, bool]] = [
     ("Semantic Scholar API key", "SEMANTIC_SCHOLAR_API_KEY", True),
-    ("Zotero User ID",           "ZOTERO_USER_ID",           False),
-    ("Zotero API key",           "ZOTERO_API_KEY",           True),
+    ("Zotero User ID", "ZOTERO_USER_ID", False),
+    ("Zotero API key", "ZOTERO_API_KEY", True),
 ]
 
 console = Console()
@@ -77,9 +77,7 @@ def _credential_prompt(
         )
         console.print(f'  [dim]  export {env_var}="<{label.lower()}>"[/dim]')
         if current_file_value:
-            console.print(
-                "  [dim](A value is already stored in config.toml.)[/dim]"
-            )
+            console.print("  [dim](A value is already stored in config.toml.)[/dim]")
 
     # --- Prompt --------------------------------------------------------------
     default = "" if is_set else current_file_value
@@ -119,7 +117,7 @@ def init(ctx: typer.Context) -> None:
     from lumen.config import _load_toml  # avoid circular at module level
 
     existing_creds = _load_toml(CONFIG_FILE).get("credentials", {})
-    file_ss  = existing_creds.get("semantic_scholar_api_key", "")
+    file_ss = existing_creds.get("semantic_scholar_api_key", "")
     file_uid = existing_creds.get("zotero_user_id", "")
     file_zot = existing_creds.get("zotero_api_key", "")
 
@@ -183,20 +181,16 @@ def init(ctx: typer.Context) -> None:
     # overwriting it with an empty string.  The env var continues to take
     # precedence over config.toml at runtime regardless.
     config.credentials = Credentials(
-        semantic_scholar_api_key=(
-            ss_key or file_ss
-        ),
-        zotero_user_id=(
-            zotero_user_id or file_uid
-        ),
-        zotero_api_key=(
-            zotero_api_key or file_zot
-        ),
+        semantic_scholar_api_key=(ss_key or file_ss),
+        zotero_user_id=(zotero_user_id or file_uid),
+        zotero_api_key=(zotero_api_key or file_zot),
     )
     config.max_results = int(max_results)
     config.format = fmt
 
     path = write_config(config)
-    console.print(f"\n[green]✓[/green] Config written to [bold]{path}[/bold] (mode 0600)")
+    console.print(
+        f"\n[green]✓[/green] Config written to [bold]{path}[/bold] (mode 0600)"
+    )
     console.print("Run [bold]lumen doctor[/bold] to verify your setup.")
     raise typer.Exit()
