@@ -14,8 +14,8 @@ from lumen.clients.base import BaseClient
 from lumen.core.models import Author, Paper, SearchResult
 from lumen.exceptions import SourceError
 
-#: arXiv ID pattern — strips URL prefix and version suffix.
-_ARXIV_ID_RE = re.compile(r"(?:https?://arxiv\.org/abs/|abs/)?([^\s/]+?)(?:v\d+)?$")
+#: arXiv ID pattern — strips URL prefix, 'arxiv:' prefix, and version suffix.
+_ARXIV_ID_RE = re.compile(r"(?:https?://arxiv\.org/abs/|abs/|arxiv:)?([^\s/]+?)(?:v\d+)?$", re.IGNORECASE)
 
 
 def _parse_arxiv_id(raw: str) -> str:

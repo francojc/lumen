@@ -123,6 +123,19 @@ class TestParseArxivId:
     def test_no_version(self):
         assert _parse_arxiv_id("https://arxiv.org/abs/1706.03762") == "1706.03762"
 
+    def test_arxiv_colon_prefix_lowercase(self):
+        assert _parse_arxiv_id("arxiv:2503.19260") == "2503.19260"
+
+    def test_arxiv_colon_prefix_uppercase(self):
+        assert _parse_arxiv_id("ARXIV:2503.19260") == "2503.19260"
+
+    def test_arxiv_colon_prefix_with_version(self):
+        assert _parse_arxiv_id("arxiv:1706.03762v2") == "1706.03762"
+
+    def test_old_style_id_passthrough(self):
+        # Old-style IDs (cs/0301027) have no matching prefix; pass through as-is.
+        assert _parse_arxiv_id("cs/0301027") == "cs/0301027"
+
 
 # ---------------------------------------------------------------------------
 # _parse_entry
