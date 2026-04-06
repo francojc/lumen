@@ -1,5 +1,10 @@
 # orbitr
 
+[![CI](https://github.com/francojc/orbitr/actions/workflows/ci.yml/badge.svg)](https://github.com/francojc/orbitr/actions/workflows/ci.yml)
+[![PyPI version](https://img.shields.io/pypi/v/orbitr)](https://pypi.org/project/orbitr/)
+[![Python versions](https://img.shields.io/pypi/pyversions/orbitr)](https://pypi.org/project/orbitr/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Academic literature search and reference management for the terminal. Search
 arXiv and Semantic Scholar concurrently, inspect papers and their citations,
 get recommendations, export bibliographies, and manage your Zotero library —
