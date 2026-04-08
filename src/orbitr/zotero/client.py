@@ -221,6 +221,7 @@ class ZoteroClient:
                 elif data.get("itemType") == "attachment":
                     attachments.append(
                         {
+                            "key": data.get("key", ""),
                             "filename": data.get("filename", ""),
                             "path": data.get("path", ""),
                             "content_type": data.get("contentType", ""),

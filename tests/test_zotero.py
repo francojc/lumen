@@ -323,12 +323,15 @@ _GET_ITEM_RESULT = {
     "notes": ["<p>Key paper on self-attention.</p>"],
     "attachments": [
         {
+            "key": "ATTC0001",
             "filename": "vaswani2017.pdf",
             "path": "/papers/vaswani2017.pdf",
             "content_type": "application/pdf",
         }
     ],
 }
+
+_EXPECTED_PDF_URI = "zotero://open-pdf/library/items/ATTC0001"
 
 _GET_ITEM_NO_CHILDREN = {
     "meta": _RAW_ITEMS[0],
@@ -456,6 +459,12 @@ class TestZoteroGet:
         with patch("orbitr.commands.zotero.ZoteroClient", return_value=zot):
             result = _invoke("zotero", "get", "ITEM0001")
         assert "10.48550" in result.output
+
+    def test_detail_shows_pdf_uri(self):
+        zot = _zot_mock_full()
+        with patch("orbitr.commands.zotero.ZoteroClient", return_value=zot):
+            result = _invoke("zotero", "get", "ITEM0001")
+        assert _EXPECTED_PDF_URI in result.output
 
     def test_detail_shows_notes(self):
         zot = _zot_mock_full()
@@ -602,6 +611,7 @@ class TestZoteroExportMd:
         assert "doi:" in output
         assert "zotero_key: ITEM0001" in output
         assert "type: source" in output
+        assert _EXPECTED_PDF_URI in output
 
     def test_body_contains_abstract(self):
         zot = _zot_mock_full()

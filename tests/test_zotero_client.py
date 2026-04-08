@@ -73,6 +73,8 @@ _CHILD_ATTACHMENT = {
     },
 }
 
+_EXPECTED_PDF_URI = "zotero://open-pdf/library/items/ATTC0001"
+
 
 def _make_client() -> tuple[ZoteroClient, MagicMock]:
     """Return a ZoteroClient whose pyzotero internals are mocked."""
@@ -178,6 +180,7 @@ class TestGetItem:
         result = client.get_item("ITEM0001")
         assert result["meta"] == _RAW_ITEMS[0]
         assert "Important paper." in result["notes"][0]
+        assert result["attachments"][0]["key"] == "ATTC0001"
         assert result["attachments"][0]["filename"] == "vaswani2017.pdf"
         assert result["attachments"][0]["content_type"] == "application/pdf"
 

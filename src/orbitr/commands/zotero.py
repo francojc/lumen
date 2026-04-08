@@ -535,15 +535,18 @@ def zotero_get(
         lines.append("[bold]Abstract:[/bold]")
         lines.append(abstract)
 
-    # PDF attachment path
+    # PDF attachment
     pdfs = [
         a for a in result["attachments"] if "pdf" in a.get("content_type", "").lower()
     ]
     if pdfs:
+        pdf = pdfs[0]
+        pdf_key = pdf.get("key", "")
+        pdf_uri = f"zotero://open-pdf/library/items/{pdf_key}" if pdf_key else ""
         lines.append("")
-        lines.append(
-            f"[bold]PDF:[/bold]      {pdfs[0].get('path') or pdfs[0].get('filename')}"
-        )
+        lines.append(f"[bold]PDF:[/bold]      {pdf.get('path') or pdf.get('filename')}")
+        if pdf_uri:
+            lines.append(f"[bold]PDF URI:[/bold]  {pdf_uri}")
 
     if notes and result["notes"]:
         lines.append("")
@@ -696,7 +699,7 @@ def zotero_export_md(
         raise typer.Exit(code=1) from exc
 
     data = result["meta"].get("data", result["meta"])
-    content = _build_export_md(item_key, data, result["notes"])
+    content = _build_export_md(item_key, data, result["notes"], result["attachments"])
 
     if output is None:
         sys.stdout.write(content)
@@ -727,7 +730,12 @@ def _auto_filename(data: dict) -> str:
     return "-".join(parts) + ".md"
 
 
-def _build_export_md(item_key: str, data: dict, notes: list[str]) -> str:
+def _build_export_md(
+    item_key: str,
+    data: dict,
+    notes: list[str],
+    attachments: list[dict] | None = None,
+) -> str:
     """Render a Zotero item as a Markdown string with YAML frontmatter."""
     title = data.get("title") or ""
     authors_full = _item_authors_full(data)
@@ -738,6 +746,13 @@ def _build_export_md(item_key: str, data: dict, notes: list[str]) -> str:
     abstract = data.get("abstractNote") or ""
     tags = [t["tag"] for t in data.get("tags", []) if t.get("tag")]
     zotero_url = f"zotero://select/items/0_{item_key}"
+
+    # Resolve PDF URI from attachments if available
+    pdf_uri = ""
+    for att in attachments or []:
+        if "pdf" in att.get("content_type", "").lower() and att.get("key"):
+            pdf_uri = f"zotero://open-pdf/library/items/{att['key']}"
+            break
 
     # YAML frontmatter — build line by line to avoid yaml dependency
     fm_lines = ["---"]
@@ -750,6 +765,8 @@ def _build_export_md(item_key: str, data: dict, notes: list[str]) -> str:
         fm_lines.append(f'doi: "{doi}"')
     fm_lines.append(f"zotero_key: {item_key}")
     fm_lines.append(f'zotero_url: "{zotero_url}"')
+    if pdf_uri:
+        fm_lines.append(f'pdf_uri: "{pdf_uri}"')
     if tags:
         fm_lines.append(f"tags: [{', '.join(tags)}]")
     fm_lines.append("type: source")
@@ -771,6 +788,8 @@ def _build_export_md(item_key: str, data: dict, notes: list[str]) -> str:
         body_lines.append(f"**DOI:** [{doi}](https://doi.org/{doi})")
     elif url:
         body_lines.append(f"**URL:** {url}")
+    if pdf_uri:
+        body_lines.append(f"**PDF:** [{pdf_uri}]({pdf_uri})")
     if abstract:
         body_lines += ["", "## Abstract", "", abstract]
     if notes:
