@@ -1,16 +1,16 @@
 # Development Project Progress
 
 **Project:** orbitr
-**Status:** v0.1.0 released
+**Status:** Active development — v0.2.0
 **Last Updated:** 2026-04-06
 
 ## Current Status Overview
 
 ### Development Phase
 
-- **Current Phase:** Released — v0.1.0
-- **Phase Progress:** All 6 phases complete
-- **Overall Project Progress:** 100% (v0.1.0)
+- **Current Phase:** Phase 7 — Zotero Library Enhancements
+- **Phase Progress:** Phases 1–6 complete; Phase 7 planned
+- **Overall Project Progress:** v0.1.0 shipped; v0.2.0 in planning
 
 ### Recent Accomplishments
 
@@ -97,17 +97,15 @@
 - [x] ~~README and project design~~ — 2026-04-05
 - [x] ~~Phase 1: repo scaffolded, Typer skeleton, config layer~~ — 2026-04-05
 - [x] ~~Phase 2: Core data layer — all clients, dedup, ranking, cache~~ — 2026-04-07
-- [x] ~~Phase 3 session 1: `orbitr search` implemented~~ — 2026-04-05
 - [x] ~~Phase 3 complete: all 11 commands implemented~~ — 2026-04-05
+- [x] ~~Phase 4: display layer polished, errors finalized~~ — 2026-04-06
+- [x] ~~Phase 5: testing and documentation~~ — 2026-04-06
+- [x] ~~Phase 6: v0.1.0 released~~ — 2026-04-06
 
 ### Upcoming Milestones
 
-- [x] ~~Phase 1 complete: repo scaffolded, Typer skeleton, config layer~~ — 2026-04-05
-- [x] ~~Phase 2 complete: all three API clients + dedup/ranking/cache~~ — 2026-04-07
-- [x] ~~Phase 3 complete: all 11 commands implemented~~ — 2026-04-05
-- [ ] Phase 4 complete: display layer polished, errors finalized — target 2026-06-09
-- [ ] Phase 4 complete: display layer polished, errors finalized — target 2026-06-09
-- [ ] v0.1.0 release — target 2026-06-23
+- [ ] Phase 7 complete: `zotero list/get/search/export-md` implemented and tested
+- [ ] v0.2.0 release
 
 ### At-Risk Milestones
 
@@ -142,7 +140,7 @@ _None identified yet._
 - [x] `src/orbitr/` package skeleton: all modules and subpackages
 - [x] `orbitr.cli` — Typer app, global flags, command registration, entry point
 - [x] `orbitr.config` — layered config (XDG, TOML, env vars, CLI flags), `write_config` (0600)
-- [x] `orbitr.exceptions` — `LumenError` hierarchy with exit codes
+- [x] `orbitr.exceptions` — `OrbitrError` hierarchy with exit codes
 - [x] `orbitr._async` — `run()` utility for per-command async execution
 - [x] `orbitr.core.models` — `Paper`, `Author`, `SearchResult` Pydantic models
 - [x] All 11 command stubs with full `--help` text and argument/option signatures
@@ -182,19 +180,25 @@ _None identified yet._
 
 ### In Progress
 
-_Nothing in progress — Phase 3 complete, Phase 4 starting._
+_Nothing in progress._
 
 ### Planned
 
-- [ ] `display/detail.py` — full single-paper Rich layout (Phase 4)
-- [ ] TTY auto-detection for default `--format` (Phase 4)
-- [ ] Pager integration (`$PAGER`, disable with `LUMEN_NO_PAGER`) (Phase 4)
-- [ ] Error message polish across all commands (Phase 4)
-- [ ] Shell completions for Zsh, Bash, Fish (Phase 4)
+- [ ] `zotero/client.py` — `list_items()`, `get_item()`, `search_items()` methods
+- [ ] `orbitr zotero list` — browse items in a collection or full library (`--collection`, `--limit`, `--sort`, `--format`)
+- [ ] `orbitr zotero get <item_key>` — full item detail with notes and attachments (`--format`, `--notes`)
+- [ ] `orbitr zotero search <query>` — full-text search within the Zotero library (`--collection`, `--limit`, `--format`)
+- [ ] `orbitr zotero export-md <item_key>` — export item as markdown with YAML frontmatter (`--output`)
+- [ ] All new `zotero` commands: `--format keys` pipeable output
+- [ ] Tests for all four new subcommands
 
 ### Deferred or Cut
 
-_Nothing deferred yet._
+- Group library support (hardcoded to user library type) — defer to v2
+- PDF text extraction / full-text indexing — defer to v2
+- Custom Jinja templates for `export-md` — defer to v2
+- Batch `export-md` for entire collections (composable via `list --format keys | xargs`) — defer to v2
+- Zotero item editing/updating from CLI — defer to v2
 
 ## Technical Debt
 
@@ -203,7 +207,7 @@ _Nothing deferred yet._
 - `test_cache.py` imports `_TTL` and `CacheStats` that are unused (ruff auto-fixed); no functional debt
 - SS `get_recommendations` fixture returned 0 results (API behaviour without key); test only asserts type, not content
 - No test coverage measurement yet — `pytest-cov` not yet run against Phase 2 or Phase 3 modules
-- `display/detail.py` still a stub — falls back to `render_list` for now; proper full-paper view deferred to Phase 4
+- `display/detail.py` — full implementation complete in Phase 4
 - TTY auto-detection for default `--format` not yet implemented — always uses config default (`table`)
 - `orbitr query --run` depends on `ctx.invoke`; integration test uses mocked search — live `--run` path not covered
 - Pager integration not yet implemented — long result sets truncate at terminal height
@@ -244,16 +248,14 @@ _None yet._
 
 ### Immediate Actions (Next 2 Weeks)
 
-- [ ] Generate shell completions for Zsh, Bash, Fish via Typer and test manually
-- [ ] Finalize README with usage examples for all 11 commands
-- [ ] Write end-to-end smoke tests hitting live APIs (run manually pre-release)
-- [ ] Set up GitHub Actions CI (lint, typecheck, test, build stages)
+- [ ] Implement `ZoteroClient.list_items()`, `get_item()`, `search_items()` in `zotero/client.py`
+- [ ] Implement `orbitr zotero list`, `get`, `search`, `export-md` in `commands/zotero.py`
+- [ ] Write tests for all four new subcommands (extend `tests/test_zotero.py`; add fixtures)
 
 ### Medium-term Goals (Next Month)
 
-- [ ] Prepare `v0.1.0` release: update `pyproject.toml` version, `CHANGELOG.md`
-- [ ] `uv build` and test install from wheel
-- [ ] Publish to PyPI or document `uv tool install` from git
+- [ ] Update `CHANGELOG.md` for v0.2.0
+- [ ] Tag and release v0.2.0
 
 ### Decisions Needed
 
@@ -264,13 +266,13 @@ _None yet._
 
 ### Next Release
 
-- **Version:** 0.1.0
-- **Target Date:** 2026-06-23
-- **Included Features:** All 11 commands, three sources, Zotero integration, caching, shell completions, `orbitr init`, `orbitr doctor`
-- **Release Blockers:** Everything — not yet started
+- **Version:** 0.2.0
+- **Target Date:** TBD
+- **Included Features:** `zotero list`, `zotero get`, `zotero search`, `zotero export-md`
+- **Release Blockers:** Phase 7 implementation
 
 ### Release History
 
 | Version | Date | Key Changes |
 |---|---|---|
-| — | — | — |
+| 0.1.0 | 2026-04-06 | Initial release — all 11 commands, arXiv + Semantic Scholar, Zotero add/collections/new, caching, shell completions |

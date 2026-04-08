@@ -1,7 +1,7 @@
 # Development Implementation Details
 
 **Project:** orbitr
-**Status:** Phase 4 complete — Phase 5 starting
+**Status:** Phases 1–6 complete (v0.1.0 released) — Phase 7 planned
 **Last Updated:** 2026-04-06
 
 ## Architecture
@@ -36,7 +36,7 @@ orbitr/
 │       │   ├── recommend.py # orbitr recommend
 │       │   ├── query.py     # orbitr query
 │       │   ├── export.py    # orbitr export
-│       │   ├── zotero.py    # orbitr zotero add / collections / new
+│       │   ├── zotero.py    # orbitr zotero add / collections / new / list / get / search / export-md
 │       │   ├── cache.py     # orbitr cache stats / clean / clear
 │       │   ├── init.py      # orbitr init
 │       │   └── doctor.py    # orbitr doctor
@@ -84,7 +84,7 @@ orbitr/
     ├── test_init.py                 # orbitr init CLI integration (8 tests)
     ├── test_doctor.py               # orbitr doctor CLI integration (13 tests)
     ├── test_query.py                # orbitr query unit + CLI integration (16 tests)
-    ├── test_zotero.py               # orbitr zotero CLI integration (18 tests)
+    ├── test_zotero.py               # orbitr zotero CLI integration (18 tests; extended in Phase 7 for list/get/search/export-md)
     └── test_display_phase4.py       # detail renderer + effective_format + render() dispatch (33 tests)
 ```
 
@@ -237,12 +237,15 @@ orbitr/
     - **`--run`:** invokes `search` command in-process via `ctx.invoke` with parsed kwargs; prints command first
     - **Dependencies:** `commands/search.py` (for `--run`), `re` (stdlib)
 
-20. **`zotero/client.py`** *(Phase 3 — complete)*
+20. **`zotero/client.py`** *(Phase 3 — complete; extended in Phase 7)*
     - **Purpose:** `pyzotero` wrapper for Zotero Web API operations
     - **`add_paper(paper, collection_key, tags)`:** builds a `journalArticle` item template; populates creators, tags, and optional collection; calls `zot.create_items()`; returns item key
     - **`list_collections()`:** returns all top-level and nested collections as list of `{key, name, parentKey}` dicts
     - **`create_collection(name, parent_key)`:** creates a new collection; returns new collection key
     - **`find_collection_key(name)`:** case-insensitive name lookup across all collections; returns key or `None`
+    - **`list_items(collection_key, limit, sort, direction, item_type)`:** calls `zot.collection_items(collection_key, ...)` when a collection key is given, otherwise `zot.items(...)`; handles pagination internally when `limit > 100` (Zotero API cap per request); returns `list[dict]` of raw Zotero item dicts
+    - **`get_item(item_key)`:** calls `zot.item(item_key)` for metadata and `zot.children(item_key)` for attachments and notes; returns `{"meta": {...}, "notes": ["..."], "attachments": [{"filename": ..., "path": ..., "content_type": ...}]}`
+    - **`search_items(query, collection_key, limit)`:** calls `zot.items(q=query, ...)` (pyzotero `q` parameter); scopes to collection when `collection_key` is set; returns `list[dict]`
     - **Auth:** `library_id`, `library_type`, `api_key` read from `Config.credentials`; `ConfigError` raised if absent
     - **Dependencies:** `pyzotero`, `core/models.py`
 
@@ -258,13 +261,22 @@ orbitr/
     - **`render(..., pager=False)`:** new `pager` parameter; when `True` and stdout is a TTY, wraps `_render_rich()` in `console.pager(styles=True)` so output is paged through `$PAGER` (default: `less -R`). JSON format bypasses pager (writes directly to stdout).
     - **`_render_rich(papers, fmt, con)`:** internal dispatcher extracted to support pager wrapping cleanly.
 
-21. **`commands/zotero.py`** *(Phase 3 — complete)*
-    - **Purpose:** Implements `orbitr zotero add/collections/new` subcommands
+21. **`commands/zotero.py`** *(Phase 3 — complete; extended in Phase 7)*
+    - **Purpose:** Implements all `orbitr zotero` subcommands
     - **`add <id>`:** fetches paper via `fetch_paper()`, resolves optional `--collection` by name, builds tag list from categories + `--tags`, calls `ZoteroClient.add_paper()`; reports item key
     - **`collections`:** lists all Zotero collections as Rich table (`key`, `name`, `parent`) or json
     - **`new <name>`:** optional `--parent` (resolved by name via `find_collection_key`); calls `create_collection()`; reports new key
+    - **`list`:** options `--collection/-c` (name or key), `--limit/-n` (default 25), `--sort` (`dateModified`, `title`, `date`), `--format/-f` (`table`, `json`, `keys`); table columns: `Key`, `Title` (truncated 60 chars), `Authors` (first author + "et al."), `Year`, `Type`; `--format keys` outputs bare item keys one-per-line for piping
+    - **`get <item_key>`:** options `--format/-f` (`detail`, `json`), `--notes/--no-notes` (default: include); `detail` renders a Rich panel with title, authors, abstract, venue, year, DOI, URL, tags, collections, and notes; `json` writes the full structured dict; reports local PDF path when a PDF attachment is present
+    - **`search <query>`:** options `--collection/-c`, `--limit/-n`, `--format/-f` (`table`, `json`, `keys`); same table format as `list`
+    - **`export-md <item_key>`:** options `--output/-o` (path or directory; default stdout); when `--output` is a directory, auto-generates filename `YYYY-Author-Short-Title.md`; output is a markdown file with YAML frontmatter (`title`, `authors`, `year`, `doi`, `zotero_key`, `zotero_url`, `tags`, `type: source`) followed by `# Title`, author/year/venue/DOI header block, `## Abstract`, and `## Notes` sections
+    - **`--format keys`** supported on `list` and `search` for pipeable output (e.g., `orbitr zotero list -c mycol --format keys | xargs -I{} orbitr zotero get {}`)
     - **ConfigError** (missing credentials) → exit 3 throughout
     - **Dependencies:** `zotero/client.py`, `commands/paper.py` (`fetch_paper`), `display/`
+
+22. **Component tree additions (Phase 7)**
+    - `tests/test_zotero.py` — extended with tests for `list`, `get`, `search`, `export-md` subcommands
+    - Zotero item dict fixtures added under `tests/fixtures/` (recorded `zot.items()`, `zot.item()`, `zot.children()` responses)
 
 ### Data Model
 
@@ -411,11 +423,11 @@ just test-v                             # verbose output
 ### Error Hierarchy
 
 ```python
-class LumenError(Exception): ...            # base
-class ConfigError(LumenError): ...          # exit code 3
-class UsageError(LumenError): ...           # exit code 2
-class SourceError(LumenError): ...          # exit code 1 (network, API)
-class NoResultsError(LumenError): ...       # exit code 4
+class OrbitrError(Exception): ...           # base
+class ConfigError(OrbitrError): ...         # exit code 3
+class UsageError(OrbitrError): ...          # exit code 2
+class SourceError(OrbitrError): ...         # exit code 1 (network, API)
+class NoResultsError(OrbitrError): ...      # exit code 4
 ```
 
 ### User-Facing Errors
@@ -444,7 +456,7 @@ except SourceError as e:
 
 - Credentials stored in `~/.config/orbitr/config.toml` under `[credentials]`; file created with `0600` permissions via `orbitr init`
 - Credentials read at startup and injected into clients; never logged, never included in JSON output or error messages
-- `LUMEN_` env vars are an alternative to the config file; take precedence
+- `ORBITR_` env vars are an alternative to the config file; take precedence
 
 ### Input Validation
 

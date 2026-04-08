@@ -506,12 +506,12 @@ zotero_api_key           = ""
 
 | Variable | Description |
 |---|---|
-| `LUMEN_SOURCES` | Default sources (comma-separated) |
-| `LUMEN_MAX_RESULTS` | Default result limit |
-| `LUMEN_FORMAT` | Default output format |
-| `LUMEN_CACHE_DIR` | Override cache directory |
-| `LUMEN_NO_CACHE` | Disable caching (`1` = true) |
-| `LUMEN_NO_PAGER` | Disable pager (`1` = true) |
+| `ORBITR_SOURCES` | Default sources (comma-separated) |
+| `ORBITR_MAX_RESULTS` | Default result limit |
+| `ORBITR_FORMAT` | Default output format |
+| `ORBITR_CACHE_DIR` | Override cache directory |
+| `ORBITR_NO_CACHE` | Disable caching (`1` = true) |
+| `ORBITR_NO_PAGER` | Disable pager (`1` = true) |
 | `SEMANTIC_SCHOLAR_API_KEY` | Semantic Scholar API key |
 | `ZOTERO_USER_ID` | Zotero user ID |
 | `ZOTERO_API_KEY` | Zotero API key |
@@ -536,7 +536,7 @@ All paper-returning commands support `--format` / `-f`:
 defaults to `json` automatically unless set explicitly.
 
 **Pager:** long output is paged through `$PAGER` (default: `less -R`) when
-stdout is a TTY. Disable with `LUMEN_NO_PAGER=1` or `--no-color`.
+stdout is a TTY. Disable with `ORBITR_NO_PAGER=1` or `--no-color`.
 
 ---
 
@@ -588,13 +588,13 @@ an interactive shell):
 orbitr --install-completion   # detects your shell and installs automatically
 ```
 
-If auto-detection fails, generate the script manually with the `_LUMEN_COMPLETE`
+If auto-detection fails, generate the script manually with the `_ORBITR_COMPLETE`
 environment variable:
 
 **Zsh:**
 
 ```bash
-_LUMEN_COMPLETE=source_zsh orbitr > ~/.zfunc/_orbitr
+_ORBITR_COMPLETE=source_zsh orbitr > ~/.zfunc/_orbitr
 # Add to ~/.zshrc (if not already present):
 #   fpath=(~/.zfunc $fpath)
 #   autoload -Uz compinit && compinit
@@ -603,7 +603,7 @@ _LUMEN_COMPLETE=source_zsh orbitr > ~/.zfunc/_orbitr
 **Bash:**
 
 ```bash
-_LUMEN_COMPLETE=source_bash orbitr > ~/.bash_completion.d/orbitr
+_ORBITR_COMPLETE=source_bash orbitr > ~/.bash_completion.d/orbitr
 # Add to ~/.bashrc:
 #   source ~/.bash_completion.d/orbitr
 ```
@@ -611,7 +611,7 @@ _LUMEN_COMPLETE=source_bash orbitr > ~/.bash_completion.d/orbitr
 **Fish:**
 
 ```bash
-_LUMEN_COMPLETE=source_fish orbitr > ~/.config/fish/completions/orbitr.fish
+_ORBITR_COMPLETE=source_fish orbitr > ~/.config/fish/completions/orbitr.fish
 ```
 
 ---
@@ -630,7 +630,7 @@ orbitr/
 │       ├── cli.py              # Typer app root; global flags; command registration
 │       ├── config.py           # Layered config: flags > env vars > file > defaults
 │       ├── _async.py           # asyncio.run() helper
-│       ├── exceptions.py       # LumenError hierarchy with exit codes
+│       ├── exceptions.py       # OrbitrError hierarchy with exit codes
 │       ├── commands/
 │       │   ├── search.py       # orbitr search
 │       │   ├── paper.py        # orbitr paper, orbitr cite

@@ -1,7 +1,7 @@
 # Development Project Planning
 
 **Project:** orbitr
-**Status:** Planning
+**Status:** Active development — v0.2.0
 **Last Updated:** 2026-04-05
 
 ## Project Overview
@@ -27,7 +27,7 @@
 - [ ] Advanced field-specific queries (title, author, abstract, venue, date range) via a single `search` command
 - [ ] Citation lookup, author search, and paper recommendations from seed titles
 - [ ] Bibliography export to BibTeX, RIS, and CSL-JSON (from the terminal or piped results)
-- [ ] Zotero library integration: add papers, create collections, list collections with automatic tagging
+- [ ] Zotero library integration: add papers, create/list collections, browse and search items, export items as markdown
 - [ ] Local result caching with TTL tiers for search, paper, and citation data
 - [ ] Full Unix composability: stdout/stderr discipline, JSON output, pipe-friendly design
 - [ ] Robust help system, informative errors with suggestions, and `orbitr doctor` diagnostics
@@ -39,6 +39,9 @@
 - No GUI or TUI — terminal output only
 - No PDF download or full-text retrieval
 - No built-in AI summarization or annotation (outside scope; handled upstream by calling tools)
+- No Zotero group library support (v1 hardcoded to user library type)
+- No PDF text extraction or full-text indexing
+- No custom Jinja templates for `zotero export-md` (v1 uses a fixed template)
 - No support for databases beyond arXiv and Semantic Scholar in v1 (Google Scholar deferred to v1.1)
 - No multi-user or server mode — single-user local tool only
 
@@ -113,8 +116,8 @@
 - [x] JSON serializer (newline-delimited, pipe-friendly) — complete in Phase 3
 - [x] Detail renderer (full single-paper view, wrapped abstract) — complete in Phase 4
 - [x] TTY auto-detection for default format switching (`effective_format()`) — complete in Phase 4
-- [x] Pager integration (`$PAGER` via `console.pager(styles=True)`, `LUMEN_NO_PAGER`) — complete in Phase 4
-- [x] Error message polish: dim suggestions, `LumenError` catch-alls, consistent "Unknown format" — complete in Phase 4
+- [x] Pager integration (`$PAGER` via `console.pager(styles=True)`, `ORBITR_NO_PAGER`) — complete in Phase 4
+- [x] Error message polish: dim suggestions, `OrbitrError` catch-alls, consistent "Unknown format" — complete in Phase 4
 
 ### Phase 5: Testing and Documentation (Weeks 11–12) — COMPLETE
 
@@ -131,6 +134,19 @@
 - [x] Wheel install verified (`orbitr --version` returns `0.1.0`)
 - [x] `CHANGELOG.md` written
 - [x] Tag v0.1.0
+
+### Phase 7: Zotero Library Enhancements — PLANNED
+
+- [ ] `ZoteroClient.list_items()` — collection-scoped or full-library item listing with pagination
+- [ ] `ZoteroClient.get_item()` — full item metadata + notes + attachments
+- [ ] `ZoteroClient.search_items()` — full-text search via pyzotero `q` parameter
+- [ ] `orbitr zotero list` — browse items (`--collection`, `--limit`, `--sort`, `--format`)
+- [ ] `orbitr zotero get <item_key>` — rich detail view with notes and PDF path (`--format`, `--notes`)
+- [ ] `orbitr zotero search <query>` — search within the local library (`--collection`, `--limit`, `--format`)
+- [ ] `orbitr zotero export-md <item_key>` — markdown export with YAML frontmatter (`--output`)
+- [ ] `--format keys` on `list` and `search` for pipeable one-per-line output
+- [ ] Tests for all four new subcommands and three new client methods
+- [ ] Update `CHANGELOG.md` and tag v0.2.0
 
 ## Resources and Requirements
 
