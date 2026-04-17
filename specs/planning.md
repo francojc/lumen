@@ -109,6 +109,16 @@
 - [ ] Define v0.3.0 feature scope (must-have / should-have / defer)
 - [ ] Define acceptance criteria per feature
 - [ ] Publish milestone issue list
+- [ ] Decide Zotero UX for recently added entries:
+  - [ ] Evaluate `zotero search --recent-*` extension vs dedicated `zotero recent`
+  - [ ] Preferred direction: keep `search` query-driven and add `zotero recent` as a browse workflow
+  - [ ] Define flags (`--days`, `--since`, `--collection`, `--limit`, `--format`) and output contracts
+- [ ] Define docs consistency guardrail policy:
+  - [ ] `specs/planning.md` and `specs/progress.md` must be updated in same PR for milestone/status changes
+  - [ ] Add CI check that fails on inconsistent project status/version/phase fields
+- [ ] Define API reliability posture for v0.3:
+  - [ ] Confirm whether `doctor` gets a deep mode (`doctor --deep`) with lightweight real queries and response-shape checks
+  - [ ] Require graceful `SourceError` wrapping and actionable suggestions for all network/API failures, including Zotero client calls
 
 #### Milestone 8.2 - Coverage baseline and CI gate (target: 2026-05-01)
 
@@ -116,9 +126,16 @@
 - [ ] Add minimum coverage threshold in CI
 - [ ] Document local coverage workflow in README/justfile
 
-#### Milestone 8.3 - Google Scholar v1.1 feasibility slice (target: 2026-05-15)
+#### Milestone 8.3 - API reliability and Google Scholar feasibility (target: 2026-05-15)
 
-- [ ] Prototype best-effort client behind feature flag
+- [ ] Implement reliability baseline for user-facing API failures:
+  - [ ] Ensure query/search command paths exit gracefully with clear message and fix suggestion
+  - [ ] Add Zotero client exception mapping to `SourceError` to avoid raw traceback leaks
+  - [ ] Add tests for network timeouts, 401/403, and transient 5xx failures across supported sources
+- [ ] Evaluate enhanced health checks:
+  - [ ] Add optional `doctor --deep` mode with lightweight per-source semantic checks
+  - [ ] Keep default `doctor` fast and low-cost
+- [ ] Prototype Google Scholar best-effort client behind feature flag
 - [ ] Add fixture-driven tests for parser stability
 - [ ] Decide ship/defer based on reliability criteria
 
@@ -127,6 +144,9 @@
 - [ ] Keep `specs/planning.md` and `specs/progress.md` synchronized weekly
 - [ ] Reintroduce `logs/` weekly and session status cadence
 - [ ] Add release checklist updates for post-v0.2 workflow
+- [ ] Implement docs consistency guardrail in CI:
+  - [ ] Add script/check to validate phase, status, and current version alignment between planning and progress docs
+  - [ ] Fail CI on drift and print a fix hint
 
 ## Risks and Constraints
 

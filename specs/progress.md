@@ -35,10 +35,10 @@
 
 ### Active Milestones (Phase 8)
 
-- [ ] Milestone 8.1 - v0.3 scope and acceptance criteria (target: 2026-04-24)
+- [ ] Milestone 8.1 - v0.3 scope and acceptance criteria, including Zotero recent-entry UX decision (target: 2026-04-24)
 - [ ] Milestone 8.2 - coverage baseline and CI gate (target: 2026-05-01)
-- [ ] Milestone 8.3 - Google Scholar v1.1 feasibility slice (target: 2026-05-15)
-- [ ] Milestone 8.4 - documentation and status cadence reset (target: 2026-05-22)
+- [ ] Milestone 8.3 - API reliability + Google Scholar v1.1 feasibility slice (target: 2026-05-15)
+- [ ] Milestone 8.4 - documentation and status cadence reset + CI consistency guardrail (target: 2026-05-22)
 
 ### At-Risk Milestones
 
@@ -65,16 +65,29 @@
 - Finalize v0.3 scope and sequencing
 - Add measurable quality gate via coverage in CI
 - Establish lightweight operational logging cadence (`logs/`)
+- Decide and scope Zotero recently-added workflow (`zotero recent` vs extending `zotero search`)
+- Define and implement docs consistency guardrails in CI
+- Strengthen API failure handling and health-check depth
 
 ### Open Tasks (next 2 weeks)
 
 - [ ] Publish v0.3 milestone issue list with owners and acceptance criteria
+- [ ] Decide Zotero recently-added command design and write command-level acceptance tests
 - [ ] Add `pytest-cov` and set an initial CI threshold
-- [ ] Add weekly and session log templates, then start regular updates
+- [ ] Add docs consistency check in CI for planning/progress phase and version fields
+- [ ] Verify graceful error exits for API/query failures and add missing test coverage
 
 ### Blockers
 
 - None currently identified
+
+## Verification Notes (2026-04-17)
+
+- `zotero search` is currently query-based and does not support date-added filters.
+- Current code supports sorting in `zotero list`, but accepted sort values exclude `dateAdded`.
+- `doctor` currently verifies endpoint reachability, but it does not perform semantic payload checks.
+- Search/query command paths already use `SourceError` with user-facing suggestions.
+- Zotero client methods do not yet consistently map backend/network exceptions into `SourceError`/`LumenError`; this is a v0.3 reliability task.
 
 ## Deferred Items
 
