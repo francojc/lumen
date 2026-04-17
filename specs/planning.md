@@ -1,8 +1,8 @@
 # Development Project Planning
 
 **Project:** orbitr
-**Status:** Active development — v0.2.0
-**Last Updated:** 2026-04-05
+**Status:** Active development - v0.3.0 planning
+**Last Updated:** 2026-04-17
 
 ## Project Overview
 
@@ -10,197 +10,150 @@
 
 - **Application Type:** CLI tool
 - **Target Platform:** macOS and Linux (cross-platform)
-- **Primary Language:** Python ≥ 3.10
+- **Primary Language:** Python >= 3.10
 - **Key Libraries/Frameworks:** Typer (CLI), Rich (terminal output), httpx (async HTTP), Pydantic (models), pyzotero (Zotero), feedparser (arXiv)
 
 ### Problem Statement
 
-- Researchers, academics, and students lack a fast, composable, terminal-native way to search academic literature across multiple databases simultaneously.
-- Existing tools either require a GUI (Zotero, Google Scholar), are locked to a single source (arXiv CLI tools), or are not designed for scripting and automation.
-- `orbitr` fills this gap: a well-designed CLI that follows Unix conventions, supports piping and JSON output, and integrates directly with Zotero for reference management — all without leaving the terminal.
+- Researchers, academics, and students need a fast, composable terminal workflow for literature discovery and reference management.
+- Existing tools are often GUI-first, source-limited, or weak for automation.
+- `orbitr` provides multi-source search, ranking, export, and Zotero integration with Unix-friendly JSON and piping.
 
 ### Goals and Non-Goals
 
 #### Goals
 
-- [ ] Multi-source search (arXiv, Semantic Scholar) with intelligent deduplication and ranking
-- [ ] Advanced field-specific queries (title, author, abstract, venue, date range) via a single `search` command
-- [ ] Citation lookup, author search, and paper recommendations from seed titles
-- [ ] Bibliography export to BibTeX, RIS, and CSL-JSON (from the terminal or piped results)
-- [ ] Zotero library integration: add papers, create/list collections, browse and search items, export items as markdown
-- [ ] Local result caching with TTL tiers for search, paper, and citation data
-- [ ] Full Unix composability: stdout/stderr discipline, JSON output, pipe-friendly design
-- [ ] Robust help system, informative errors with suggestions, and `orbitr doctor` diagnostics
-- [ ] Shell completions for Zsh, Bash, and Fish
-- [ ] `orbitr init` guided setup for credentials and defaults
+- [x] Multi-source search (arXiv, Semantic Scholar) with intelligent deduplication and ranking
+- [x] Advanced field-specific queries (title, author, abstract, venue, date range) via a single `search` command
+- [x] Citation lookup, author search, and paper recommendations from seed titles
+- [x] Bibliography export to BibTeX, RIS, and CSL-JSON
+- [x] Zotero library integration: add papers, create/list collections, browse/search items, export items as markdown
+- [x] Local result caching with TTL tiers for search, paper, and citation data
+- [x] Full Unix composability: stdout/stderr discipline, JSON output, pipe-friendly design
+- [x] Robust help system, informative errors with suggestions, and `orbitr doctor` diagnostics
+- [x] Shell completions for Zsh, Bash, and Fish
+- [x] `orbitr init` guided setup for credentials and defaults
 
 #### Non-Goals
 
-- No GUI or TUI — terminal output only
+- No GUI or TUI - terminal output only
 - No PDF download or full-text retrieval
-- No built-in AI summarization or annotation (outside scope; handled upstream by calling tools)
-- No Zotero group library support (v1 hardcoded to user library type)
+- No built-in AI summarization or annotation
+- No Zotero group library support in v1/v0.2
 - No PDF text extraction or full-text indexing
-- No custom Jinja templates for `zotero export-md` (v1 uses a fixed template)
-- No support for databases beyond arXiv and Semantic Scholar in v1 (Google Scholar deferred to v1.1)
-- No multi-user or server mode — single-user local tool only
-
-## Architecture and Design
-
-### High-Level Architecture
-
-- **Pattern:** CLI pipeline — command tree dispatches to source clients, results flow through core processing (deduplication, ranking, caching), then to display layer
-- **Data Flow:** User invokes command → config resolved → clients query source APIs concurrently → results deduplicated and ranked → rendered in requested format (table/list/detail/json)
-- **Key Components:**
-  - `cli.py` — Typer app, command registration, global flags
-  - `commands/` — one module per command group (search, paper, cite, author, recommend, export, zotero, cache, init, doctor)
-  - `clients/` — source-specific API clients (arXiv, Semantic Scholar; Google Scholar deferred to v1.1)
-  - `core/` — models, deduplication, ranking, caching, export formatting
-  - `zotero/` — Zotero Web API client and collection management
-  - `display/` — Rich renderers for table, list, detail, and JSON output
-  - `config.py` — layered config resolution (CLI flags > env vars > config file > defaults)
-
-### External Dependencies
-
-- **APIs and Services:** arXiv API (Atom feed), Semantic Scholar API (REST), Google Scholar (web scraping via BeautifulSoup), Zotero Web API
-- **Data Sources:** Remote APIs only; local SQLite for cache
-- **Build Tools:** `uv` for dependency management and packaging; `hatchling` build backend
-
-### Technical Constraints
-
-- Async HTTP throughout (`httpx`) to support concurrent multi-source queries
-- Rate limiting respected per source: arXiv (3 req/s), Semantic Scholar (100 req/min with key), Google Scholar (conservative with delays)
-- Retry with exponential backoff on 429/503; circuit-break per source so partial failures degrade gracefully
-- `NO_COLOR` env var and `--no-color` flag honored throughout
-- Config and cache follow XDG Base Directory spec (`~/.config/orbitr/`, `~/.cache/orbitr/`)
-- Credentials file created with `0600` permissions
+- No custom Jinja templates for `zotero export-md` in v0.2
+- No support for databases beyond arXiv and Semantic Scholar in v0.2 (Google Scholar deferred)
+- No multi-user or server mode
 
 ## Timeline and Milestones
 
-### Phase 1: Architecture and Scaffolding (Weeks 1–2) — COMPLETE
+### Phase 1: Architecture and Scaffolding - COMPLETE
 
-- [x] Initialize repo with `pyproject.toml`, `flake.nix`, `.gitignore`
-- [x] Set up Typer app skeleton with global flags (`--help`, `--version`, `--verbose`, `--quiet`, `--no-color`)
-- [x] Implement config resolution layer (file, env vars, defaults)
-- [x] Stub all command modules with `--help` strings and argument signatures
-- [x] Write `orbitr init` and `orbitr doctor` skeletons
+- [x] Initialize repo and packaging scaffold
+- [x] Typer skeleton with global flags
+- [x] Config resolution layer
+- [x] Command stubs
+- [x] `orbitr init` and `orbitr doctor` skeletons
 
-### Phase 2: Core Data Layer (Weeks 3–4) — COMPLETE
+### Phase 2: Core Data Layer - COMPLETE
 
-- [x] Define Pydantic models (`Paper`, `Author`, `SearchResult`)
-- [x] Implement arXiv client (Atom feed parsing via feedparser)
-- [x] Implement Semantic Scholar client (REST API, pagination)
-- [—] ~~Google Scholar client~~ — deferred to v1.1
-- [x] Implement deduplication (DOI, arXiv ID, fuzzy title matching)
-- [x] Implement ranking (relevance, citations, date, combined, impact)
-- [x] Implement SQLite cache with TTL tiers
+- [x] Pydantic models (`Paper`, `Author`, `SearchResult`)
+- [x] arXiv client
+- [x] Semantic Scholar client
+- [x] Deduplication and ranking
+- [x] SQLite cache with TTL tiers
+- [ ] Google Scholar client (deferred)
 
-### Phase 3: Command Implementation (Weeks 5–8) — COMPLETE
+### Phase 3: Command Implementation - COMPLETE
 
-- [x] `orbitr search` — keyword + field filters, multi-source, dedup, rank
-- [x] `orbitr paper` — fetch by ID from arXiv or Semantic Scholar
-- [x] `orbitr cite` — citing papers via Semantic Scholar
-- [x] `orbitr author` — author search across sources
-- [x] `orbitr recommend` — content, citation, and hybrid methods via SS
-- [x] `orbitr export` — BibTeX, RIS, CSL-JSON; stdin ndjson + `--query` paths
-- [x] `orbitr query` — natural language to query syntax helper; `--run` flag
-- [x] `orbitr zotero add/collections/new` — full Zotero integration
-- [x] `orbitr cache stats/clean/clear` — thin wrappers over `core/cache.py`
-- [x] `orbitr init` — full interactive credential setup (fixed + tested)
-- [x] `orbitr doctor` — connectivity and config health checks (fixed + tested)
+- [x] `search`, `paper`, `cite`, `author`, `recommend`
+- [x] `export`, `query`, `cache`, `init`, `doctor`
+- [x] `zotero add/collections/new`
 
-### Phase 4: Display and Polish (Weeks 9–10) — COMPLETE
+### Phase 4: Display and Polish - COMPLETE
 
-- [x] Rich table renderer (truncated fields, color-coded) — complete in Phase 3
-- [x] Rich list renderer (labeled blocks per paper) — complete in Phase 3
-- [x] JSON serializer (newline-delimited, pipe-friendly) — complete in Phase 3
-- [x] Detail renderer (full single-paper view, wrapped abstract) — complete in Phase 4
-- [x] TTY auto-detection for default format switching (`effective_format()`) — complete in Phase 4
-- [x] Pager integration (`$PAGER` via `console.pager(styles=True)`, `ORBITR_NO_PAGER`) — complete in Phase 4
-- [x] Error message polish: dim suggestions, `OrbitrError` catch-alls, consistent "Unknown format" — complete in Phase 4
+- [x] Table/list/detail/json renderers
+- [x] TTY format auto-selection
+- [x] Pager integration
+- [x] Error polish and consistency
 
-### Phase 5: Testing and Documentation (Weeks 11–12) — COMPLETE
+### Phase 5: Testing and Documentation - COMPLETE
 
-- [x] Unit tests for core (deduplication, ranking, cache, export) — 343 tests total
-- [x] Integration tests with mocked API responses
-- [x] Shell completion generation documented (`--install-completion`, env-var fallback)
-- [x] README finalized and `.env.example` verified
-- [x] Smoke test script (`tests/smoke_test.sh`) for pre-release live-API validation
-- [x] GitHub Actions CI pipeline (lint, typecheck, test 3.10–3.12, coverage, build, publish)
+- [x] Expanded unit/integration tests
+- [x] CI pipeline
+- [x] README and setup docs
+- [x] Smoke test script
 
-### Phase 6: Release (Week 13) — COMPLETE
+### Phase 6: Initial Release - COMPLETE
 
-- [x] `uv build` — wheel and sdist produced
-- [x] Wheel install verified (`orbitr --version` returns `0.1.0`)
-- [x] `CHANGELOG.md` written
-- [x] Tag v0.1.0
+- [x] Build artifacts verified
+- [x] v0.1.x release/tag complete
 
-### Phase 7: Zotero Library Enhancements — PLANNED
+### Phase 7: Zotero Library Enhancements - COMPLETE
 
-- [ ] `ZoteroClient.list_items()` — collection-scoped or full-library item listing with pagination
-- [ ] `ZoteroClient.get_item()` — full item metadata + notes + attachments
-- [ ] `ZoteroClient.search_items()` — full-text search via pyzotero `q` parameter
-- [ ] `orbitr zotero list` — browse items (`--collection`, `--limit`, `--sort`, `--format`)
-- [ ] `orbitr zotero get <item_key>` — rich detail view with notes and PDF path (`--format`, `--notes`)
-- [ ] `orbitr zotero search <query>` — search within the local library (`--collection`, `--limit`, `--format`)
-- [ ] `orbitr zotero export-md <item_key>` — markdown export with YAML frontmatter (`--output`)
-- [ ] `--format keys` on `list` and `search` for pipeable one-per-line output
-- [ ] Tests for all four new subcommands and three new client methods
-- [ ] Update `CHANGELOG.md` and tag v0.2.0
+- [x] `ZoteroClient.list_items()`
+- [x] `ZoteroClient.get_item()`
+- [x] `ZoteroClient.search_items()`
+- [x] `orbitr zotero list`
+- [x] `orbitr zotero get <item_key>`
+- [x] `orbitr zotero search <query>`
+- [x] `orbitr zotero export-md <item_key>`
+- [x] `--format keys` support on list/search
+- [x] Tests for new client methods and subcommands
+- [x] v0.2.0 release and tag
 
-## Resources and Requirements
+### Phase 8: v0.3.0 Planning and Reliability - ACTIVE
 
-### Development Environment
+#### Milestone 8.1 - Scope and acceptance criteria (target: 2026-04-24)
 
-- Python 3.10+ via Nix flake or system install
-- `uv` for dependency management (`uv sync`, `uv tool install .`)
-- Nix flake for reproducible dev shell
-- No local services required (SQLite cache is file-based)
+- [ ] Define v0.3.0 feature scope (must-have / should-have / defer)
+- [ ] Define acceptance criteria per feature
+- [ ] Publish milestone issue list
 
-### Infrastructure
+#### Milestone 8.2 - Coverage baseline and CI gate (target: 2026-05-01)
 
-- No hosting required — local CLI tool
-- GitHub for version control and releases
-- GitHub Actions for CI (lint, test, build)
-- PyPI for distribution (optional; `uv tool install` from git is sufficient)
+- [ ] Add `pytest-cov` config and baseline coverage report
+- [ ] Add minimum coverage threshold in CI
+- [ ] Document local coverage workflow in README/justfile
 
-### Collaboration
+#### Milestone 8.3 - Google Scholar v1.1 feasibility slice (target: 2026-05-15)
 
-- Solo project; no formal review process required
-- Conventional commits for changelog generation
+- [ ] Prototype best-effort client behind feature flag
+- [ ] Add fixture-driven tests for parser stability
+- [ ] Decide ship/defer based on reliability criteria
 
-## Risk Assessment
+#### Milestone 8.4 - Documentation and status operations (target: 2026-05-22)
+
+- [ ] Keep `specs/planning.md` and `specs/progress.md` synchronized weekly
+- [ ] Reintroduce `logs/` weekly and session status cadence
+- [ ] Add release checklist updates for post-v0.2 workflow
+
+## Risks and Constraints
 
 ### Technical Risks
 
-- **Google Scholar scraping fragility** — deferred to v1.1; structure changes frequently and a brittle scraper raises maintenance burden disproportionate to value at launch
-- **Rate limiting from Semantic Scholar without an API key** — mitigate with conservative defaults, cache, and clear error messages pointing to `orbitr init`
-- **Async complexity in Typer** — Typer runs synchronously; mitigate by wrapping async client calls in `asyncio.run()` per command, or using a thin async runner utility
+- Google Scholar scraping fragility
+- Semantic Scholar rate limiting when no API key is configured
+- Async command complexity in Typer command boundaries
 
 ### Scope Risks
 
-- Recommendation algorithm quality may invite scope creep (ML models, embeddings, etc.) — keep v1 to keyword/citation-based methods only
-- Zotero integration covers the common cases; edge cases (group libraries, linked attachments) deferred to v2
-- Google Scholar is intentionally best-effort and documented as such
+- Recommendation quality can trigger scope creep
+- Zotero edge cases (group libraries, linked attachments) remain deferred
 
-## Success Metrics
+## Success Metrics (v0.3 planning window)
 
-### Functional Criteria
+### Delivery Metrics
 
-- [ ] All 11 commands implemented and passing integration tests
-- [ ] Multi-source search returns deduplicated, ranked results
-- [ ] Pipe chain `orbitr search ... --format json | orbitr export` works end-to-end
-- [ ] Zotero add/collections/new functional with valid credentials
+- [ ] v0.3.0 milestones and dates approved
+- [ ] All v0.3.0 must-have features mapped to issues
 
-### Quality Criteria
+### Quality Metrics
 
-- [ ] Unit test coverage ≥ 80% for `core/` modules
-- [ ] All commands have `--help` text with usage example
-- [ ] `orbitr doctor` catches missing credentials and unreachable services
-- [ ] No unhandled exceptions surface to the user — all errors caught and formatted
+- [ ] CI includes coverage report and threshold gate
+- [ ] No regression in existing command help, error handling, or output contracts
 
-### Adoption Criteria
+### Operational Metrics
 
-- [ ] Installable with a single `uv tool install` command
-- [ ] `orbitr init` completes setup in under 2 minutes for a new user
-- [ ] Shell completions installable for Zsh, Bash, and Fish
+- [ ] Weekly status entry added under `logs/`
+- [ ] Session notes captured for major implementation blocks
