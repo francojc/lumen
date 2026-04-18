@@ -640,7 +640,9 @@ class TestZoteroRecent:
     def test_recent_excludes_non_reference_items(self):
         zot = _zot_mock_full()
         with patch("orbitr.commands.zotero.ZoteroClient", return_value=zot):
-            result = _invoke("zotero", "recent", "--since", "2026-04-01", "--format", "keys")
+            result = _invoke(
+                "zotero", "recent", "--since", "2026-04-01", "--format", "keys"
+            )
         assert result.exit_code == 0
         assert "ITEM0001" in result.output
         assert "ITEM0003" not in result.output

@@ -5,7 +5,9 @@ import sys
 from pathlib import Path
 
 
-def _write_docs(tmp_path: Path, planning_status: str, progress_status: str) -> tuple[Path, Path]:
+def _write_docs(
+    tmp_path: Path, planning_status: str, progress_status: str
+) -> tuple[Path, Path]:
     planning = tmp_path / "planning.md"
     progress = tmp_path / "progress.md"
 
