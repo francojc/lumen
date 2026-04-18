@@ -6,7 +6,7 @@ import json
 import logging
 import re
 import sys
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Annotated
 
@@ -88,7 +88,7 @@ def _recent_cutoff(days: int | None, since: str | None) -> datetime | None:
             raise ValueError("--since must be YYYY-MM-DD")
         return dt
     if days is not None:
-        return datetime.now(UTC) - timedelta(days=days)
+        return datetime.now(timezone.utc) - timedelta(days=days)
     return None
 
 
