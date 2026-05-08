@@ -46,10 +46,28 @@ all without leaving the shell.
 
 ## Installation
 
-**Requirements:** Python ≥ 3.10, [`uv`](https://docs.astral.sh/uv/)
+### PyPI (recommended)
+
+**With [`uv`](https://docs.astral.sh/uv/) (fastest):**
 
 ```bash
-git clone <repo-url> orbitr
+uv tool install orbitr
+orbitr --version
+```
+
+**With pip:**
+
+```bash
+pip install orbitr
+orbitr --version
+```
+
+**Requirements:** Python ≥ 3.10
+
+### From source
+
+```bash
+git clone https://github.com/francojc/orbitr
 cd orbitr
 uv tool install .
 orbitr --version
