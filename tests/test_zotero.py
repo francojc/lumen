@@ -621,8 +621,9 @@ class TestZoteroRecent:
         # Pin cutoff to 2026-04-06 so ITEM0001 (2026-04-16) passes and
         # ITEM0002 (2026-03-01) does not, regardless of when the test runs.
         fixed_cutoff = datetime(2026, 4, 6, 0, 0, 0, tzinfo=timezone.utc)
-        with patch("orbitr.commands.zotero.ZoteroClient", return_value=zot), patch(
-            "orbitr.commands.zotero._recent_cutoff", return_value=fixed_cutoff
+        with (
+            patch("orbitr.commands.zotero.ZoteroClient", return_value=zot),
+            patch("orbitr.commands.zotero._recent_cutoff", return_value=fixed_cutoff),
         ):
             result = _invoke("zotero", "recent", "--days", "14", "--format", "keys")
         assert result.exit_code == 0
